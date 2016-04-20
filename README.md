@@ -1,6 +1,10 @@
 # Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Pre Release](https://img.shields.io/nuget/vpre/SerilogTimings.svg?maxAge=2592000)](https://nuget.org/packages/serilogtimings)
 
-Extends Serilog with timed operations. Built with some specific requirements in mind:
+Serilog's support for structured data makes it a great way to collect timing information. It's easy 
+to get started with in development, because the timings are printed to the same output as other
+log messages (the console, files, etc.) so a metrics server doesn't have to be available all the time.
+
+Serilog Timings is built with some specific requirements in mind:
 
  * One operation produces exactly one log event (events are raised at the completion of an operation)
  * Natural and fully-templated messages
@@ -8,10 +12,6 @@ Extends Serilog with timed operations. Built with some specific requirements in 
 
 This keeps noise in the log to a minimum, and makes it easy to extract and manipulate timing 
 information on a per-operation basis.
-
-Serilog's support for structured data makes it a great way to collect timing information. It's easy 
-to get started with in development, because the timings are printed to the same output as other
-log messages (the console, files, etc.) so a metrics server doesn't have to be available all the time.
 
 ### Installation
 
