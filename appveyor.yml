@@ -25,7 +25,7 @@ build_script:
 
     msbuild serilog-timings.sln /m:4 /nologo /v:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 test_script:
-- cmd: dnx -p test\SerilogTimings.Tests test
+- cmd: dnx --framework dnx451 -p test\SerilogTimings.Tests test
 artifacts:
 - path: artifacts\bin\SerilogTimings\Release\SerilogTimings.*.nupkg
 deploy:
