@@ -6,7 +6,8 @@
   "projectUrl": "",
   "licenseUrl": "",
   "frameworks": {
-    "net451": { }
+    "net451": { },
+    "dnxcore50": { }
   },
   "dependencies": {
     "SerilogTimings": "1.0.0-*"
