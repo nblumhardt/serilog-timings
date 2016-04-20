@@ -1,4 +1,4 @@
-# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Pre Release](https://img.shields.io/nuget/vpre/SerilogTimings.svg?maxAge=2592000)]()
+# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Pre Release](https://img.shields.io/nuget/vpre/SerilogTimings.svg?maxAge=2592000)](https://nuget.org/packages/serilogtimings)
 
 Extends Serilog with timed operations. Built with some specific requirements in mind:
 
