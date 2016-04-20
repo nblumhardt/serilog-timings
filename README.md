@@ -45,7 +45,7 @@ using (Operation.Time("Submitting payment for {OrderId}", order.Id))
 At the completion of the `using` block, a message will be written to the log like:
 
 ```
-[INF] Submitting payment for order-12345 completed in 456 ms
+[INF] Submitting payment for order-12345 completed in 456.7 ms
 ```
 
 The operation description passed to `Time()` is a message template; the event written to the log
@@ -72,7 +72,7 @@ using (var op = Operation.Begin("Retrieving orders for {CustomerId}", customer.I
 Using `op.Complete()` will produce the same kind of result as in the first example:
 
 ```
-[INF] Retrieving orders for customer-67890 completed in 7 ms
+[INF] Retrieving orders for customer-67890 completed in 7.8 ms
 ```
 
 Additional methods on `Operation` allow more detailed results to be captured:
@@ -88,7 +88,7 @@ If the operation is not completed by calling `Complete()`, it is assumed to have
 warning-level event will be written to the log instead:
 
 ```
-[WRN] Retrieving orders for customer-67890 abandoned in 1234 ms
+[WRN] Retrieving orders for customer-67890 abandoned in 1234.5 ms
 ```
 
 In this case the `Outcome` property will be `"abandoned"`.
