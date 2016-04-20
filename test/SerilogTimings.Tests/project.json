@@ -1,0 +1,15 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "SerilogTimings.Tests Class Library",
+  "authors": [ "nblumhardt" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "net451": { }
+  },
+  "dependencies": {
+    "SerilogTimings": "1.0.0-*"
+  }
+}
+
