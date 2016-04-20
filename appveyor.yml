@@ -6,7 +6,7 @@ init:
 - cmd: 
 environment:
   DNX_FEED: https://www.nuget.org/api/v2
-  DNX_BUILD_VERSION: '%APPVEYOR_BUILD_NUMBER%'
+  DNX_BUILD_VERSION: 'beta-%APPVEYOR_BUILD_NUMBER%'
 install:
 - ps: Invoke-WebRequest https://api.nuget.org/downloads/nuget.exe -OutFile nuget.exe
 build_script:
