@@ -4,7 +4,7 @@ Extends Serilog with timed operations. Built with some specific requirements in 
 
  * One operation produces exactly one log event (events are raised at the completion of an operation)
  * Natural and fully-templated messages
- * Events for a single operation have a single event type, across both success and failure cases (only the logging level and `Status` properties change)
+ * Events for a single operation have a single event type, across both success and failure cases (only the logging level and `Outcome` properties change)
 
 This keeps noise in the log to a minimum, and makes it easy to extract and manipulate timing 
 information on a per-operation basis.
