@@ -1,0 +1,37 @@
+version: 1.0.0-beta-{build}
+image: Visual Studio 2015
+configuration: Release
+platform: Any CPU
+init:
+- cmd: 
+environment:
+  DNX_FEED: https://www.nuget.org/api/v2
+  DNX_BUILD_VERSION: '%APPVEYOR_BUILD_NUMBER%'
+install:
+- ps: Invoke-WebRequest https://api.nuget.org/downloads/nuget.exe -OutFile nuget.exe
+build_script:
+- cmd: >-
+    nuget restore serilog-timings.sln
+
+    nuget install xunit.runner.console -ExcludeVersion -Pre -OutputDirectory packages
+
+    nuget install xunit.runner.msbuild -ExcludeVersion -Pre -OutputDirectory packages
+
+    dnvm install 1.0.0-rc1-final
+
+    dnu restore
+
+    set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
+
+    msbuild serilog-timings.sln /m:4 /nologo /v:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+test_script:
+- cmd: dnx -p test\SerilogTimings.Tests test
+artifacts:
+- path: artifacts\bin\SerilogTimings\Release\SerilogTimings.*.nupkg
+deploy:
+- provider: NuGet
+  api_key:
+    secure: /Dm+EI0E1vCa+rZfYkluSnk7iSnAFKNOcEpreQrG88uYqCm//dKpY5vwqb1EJm3j
+  skip_symbols: true
+  on:
+    branch: master
