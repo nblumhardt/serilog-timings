@@ -18,7 +18,7 @@ log messages (the console, files, etc.) so a metrics server doesn't have to be a
 The library is published as _SerilogTimings_ on NuGet.
 
 ```powershell
-Install-Package SerilogTimings
+Install-Package SerilogTimings -Pre -DependencyVersion Highest
 ```
 
 .NET 4.5+ and .NET Core are supported. On .NET 4.5, the package depends upon and uses the RTM version of Serilog 1.5. Targeting .NET Core, the package uses the Serilog 2.0 beta.
