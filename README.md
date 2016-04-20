@@ -111,16 +111,6 @@ using (logger.TimeOperation("Submitting payment for {OrderId}", order.Id))
 
 These otherwise behave identically to `Operation.Time()` and `Operation.Begin()`.
 
-### Leveling
-
-Timings are most useful in production, so timing events are recorded at the `Information` level and
-higher, which should generally be collected all the time.
-
-### Precision
-
-All timings are recorded in milliseconds. The library assumes that if you're writing the kind of
-code that needs sub-millisecond timings, you'll want to use `Stopwatch` directly for tighter control.
-
 ### `LogContext` support
 
 If your application enables the Serilog `LogContext` feature using `Enrich.FromLogContext()` on
@@ -136,9 +126,23 @@ One important usage note: because the event is not written until the completion 
 (or call to `Complete()`), arguments to `Begin()` or `Time()` are not captured until then; don't
 pass parameters to these methods that mutate during the operation.
 
+### Opinions
+
+Serilog Timings is opinionated; a few possible features have been deliberately excluded.
+
+**Leveling** - Timings are most useful in production, so timing events are recorded at the `Information` level and
+higher, which should generally be collected all the time.
+
+**Precision** - All timings are recorded in milliseconds. The library assumes that if you're writing the kind of
+code that needs sub-millisecond timings, you'll want to use `Stopwatch` directly for tighter control.
+
+**Warning thresholds** - Timings for completed operations are always output as `Information` events; while it's
+certainly useful to track events exceeding a set threshold, it's best to do this in the back-end collector, since
+what consitutes a "normal" timing often evolves as the app changes and usage patterns vary.
+
 ### How does this relate to SerilogMetrics?
 
 [SerilogMetrics](https://github.com/serilog-metrics/serilog-metrics) is a mature metrics solution
-for Serilog that includes timings as well as counters, gauges and more. _SerilogTimings_ is an 
+for Serilog that includes timings as well as counters, gauges and more. Serilog Timings is an 
 alternative implementaion of timings only, designed with some different stylistic preferences and
 goals. You should definitely check out SerilogMetrics as well, to see if it's more to your tastes!
