@@ -17,7 +17,7 @@ build_script:
 
     nuget install xunit.runner.msbuild -ExcludeVersion -Pre -OutputDirectory packages
 
-    dnvm install 1.0.0-rc1-final
+    dnvm install 1.0.0-rc1-update1
 
     dnu restore
 
