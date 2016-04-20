@@ -76,16 +76,34 @@ namespace SerilogTimings
             _stopwatch = Stopwatch.StartNew();
         }
 
+        /// <summary>
+        /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
+        /// or disposed to record abandonment.
+        /// </summary>
+        /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
+        /// <param name="args">Arguments to the log message. These will be stored and captured only when the
+        /// operation completes, so do not pass arguments that are mutated during the operation.</param>
+        /// <returns>An <see cref="Operation"/> object.</returns>
         public static Operation Begin(string messageTemplate, params object[] args)
         {
             return Log.Logger.BeginOperation(messageTemplate, args);
         }
 
+        /// <summary>
+        /// Begin a new timed operation. The return value must be disposed to complete the operation.
+        /// </summary>
+        /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
+        /// <param name="args">Arguments to the log message. These will be stored and captured only when the
+        /// operation completes, so do not pass arguments that are mutated during the operation.</param>
+        /// <returns>An <see cref="Operation"/> object.</returns>
         public static IDisposable Time(string messageTemplate, params object[] args)
         {
             return Log.Logger.TimeOperation(messageTemplate, args);
         }
 
+        /// <summary>
+        /// Complete the timed operation. This will write the event and elapsed time to the log.
+        /// </summary>
         public void Complete()
         {
             if (_completionBehaviour == CompletionBehaviour.Silent)
@@ -94,6 +112,12 @@ namespace SerilogTimings
             Write(_target, LogEventLevel.Information, OutcomeCompleted);
         }
 
+        /// <summary>
+        /// Complete the timed operation with an included result value.
+        /// </summary>
+        /// <param name="resultPropertyName">The name for the property to attach to the event.</param>
+        /// <param name="result">The result value.</param>
+        /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
         public void Complete(string resultPropertyName, object result, bool destructureObjects = false)
         {
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
@@ -104,12 +128,21 @@ namespace SerilogTimings
             Write(_target.ForContext(resultPropertyName, result, destructureObjects), LogEventLevel.Information, OutcomeCompleted);
         }
 
+        /// <summary>
+        /// Cancel the timed operation. After calling, no event will be recorded either through
+        /// completion or disposal.
+        /// </summary>
         public void Cancel()
         {
             _completionBehaviour = CompletionBehaviour.Silent;
             PopLogContext();
         }
 
+        /// <summary>
+        /// Dispose the operation. If not already completed or canceled, an event will be written
+        /// with timing information. Operations started with <see cref="Time"/> will be completed through
+        /// disposal. Operations started with <see cref="Begin"/> will be recorded as abandoned.
+        /// </summary>
         public void Dispose()
         {
             switch (_completionBehaviour)

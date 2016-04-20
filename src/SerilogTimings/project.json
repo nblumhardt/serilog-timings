@@ -6,6 +6,8 @@
   "projectUrl": "https://github.com/nblumhardt/serilog-timings",
   "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
 
+  "xmlDoc":  true,
+
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
