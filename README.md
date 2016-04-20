@@ -133,9 +133,6 @@ Serilog Timings is opinionated; a few possible features have been deliberately e
 **Leveling** - Timings are most useful in production, so timing events are recorded at the `Information` level and
 higher, which should generally be collected all the time.
 
-**Precision** - All timings are recorded in milliseconds. The library assumes that if you're writing the kind of
-code that needs sub-millisecond timings, you'll want to use `Stopwatch` directly for tighter control.
-
 **Warning thresholds** - Timings for completed operations are always output as `Information` events; while it's
 certainly useful to track events exceeding a set threshold, it's best to do this in the back-end collector, since
 what consitutes a "normal" timing often evolves as the app changes and usage patterns vary.

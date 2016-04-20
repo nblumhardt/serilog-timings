@@ -141,7 +141,13 @@ namespace SerilogTimings
         void Write(ILogger target, LogEventLevel level, string outcome)
         {
             _completionBehaviour = CompletionBehaviour.Silent;
-            target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}}} ms", _args.Concat(new object[] {outcome, _stopwatch.ElapsedMilliseconds }).ToArray());
+
+            var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
+
+            target
+                .ForContext<Operation>()
+                .Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
+
             PopLogContext();
         }
     }
