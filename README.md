@@ -131,7 +131,9 @@ pass parameters to these methods that mutate during the operation.
 Serilog Timings is opinionated; a few possible features have been deliberately excluded.
 
 **Leveling** - Timings are most useful in production, so timing events are recorded at the `Information` level and
-higher, which should generally be collected all the time.
+higher, which should generally be collected all the time. If you truly need `Verbose`- or `Debug`-level timings, you
+can emulate them by adding code like `if (!Log.IsEnabled(LogEventLevel.Debug)) { op.Cancel(); }` as the first 
+statement in an operation block.
 
 **Warning thresholds** - Timings for completed operations are always output as `Information` events; while it's
 certainly useful to track events exceeding a set threshold, it's best to do this in the back-end collector, since
