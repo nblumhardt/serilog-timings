@@ -120,24 +120,28 @@ timing blocks automatically.
 This is **highly recommended**, because it makes it much easier to trace from a timing result back 
 through the operation that raised it.
 
+### Levelling
+
+Timings are most useful in production, so timing events are recorded at the `Information` level and
+higher, which should generally be collected all the time.
+
+If you truly need `Verbose`- or `Debug`-level timings, you can trigger them with `Operation.At()` or
+the `OperationAt()` extension method on `ILogger`:
+
+```csharp
+using (Operation.At(LogEventLevel.Debug).Time("Preparing zip archive"))
+{
+    // ...
+```
+
+When a level is specified, both completion and abandonment events will use it. To configure a different
+abandonment level, pass the second optional parameter to the `At()` method.
+
 ### Caveats
 
 One important usage note: because the event is not written until the completion of the `using` block
 (or call to `Complete()`), arguments to `Begin()` or `Time()` are not captured until then; don't
 pass parameters to these methods that mutate during the operation.
-
-### Opinions
-
-Serilog Timings is opinionated; a few possible features have been deliberately excluded.
-
-**Leveling** - Timings are most useful in production, so timing events are recorded at the `Information` level and
-higher, which should generally be collected all the time. If you truly need `Verbose`- or `Debug`-level timings, you
-can emulate them by adding code like `if (!Log.IsEnabled(LogEventLevel.Debug)) { op.Cancel(); }` as the first 
-statement in an operation block.
-
-**Warning thresholds** - Timings for completed operations are always output as `Information` events; while it's
-certainly useful to track events exceeding a set threshold, it's best to do this in the back-end collector, since
-what consitutes a "normal" timing often evolves as the app changes and usage patterns vary.
 
 ### How does this relate to SerilogMetrics?
 
