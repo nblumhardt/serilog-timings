@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Serilog;
 using Serilog.Events;
 using SerilogTimings.Extensions;
 using SerilogTimings.Tests.Support;
@@ -73,6 +74,45 @@ namespace SerilogTimings.Tests
             op.Complete();
             op.Dispose();
             Assert.Equal(0, logger.Events.Count);
+        }
+
+        [Fact]
+        public void CustomCompletionLevelsAreApplied()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.OperationAt(LogEventLevel.Error).Time("Test");
+            op.Dispose();
+            Assert.Equal(1, logger.Events.Count);
+            Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
+        }
+
+        [Fact]
+        public void AbandonmentLevelsDefaultToCustomCompletionLevelIfApplied()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.OperationAt(LogEventLevel.Error).Begin("Test");
+            op.Dispose();
+            Assert.Equal(1, logger.Events.Count);
+            Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
+        }
+
+        [Fact]
+        public void CustomAbandonmentLevelsAreApplied()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.OperationAt(LogEventLevel.Error, LogEventLevel.Fatal).Begin("Test");
+            op.Dispose();
+            Assert.Equal(1, logger.Events.Count);
+            Assert.Equal(LogEventLevel.Fatal, logger.Events.Single().Level);
+        }
+
+        [Fact]
+        public void IfNeitherLevelIsEnabledACachedResultIsReturned()
+        {
+            var logger = new LoggerConfiguration().CreateLogger(); // Information
+            var op = logger.OperationAt(LogEventLevel.Verbose).Time("Test");
+            var op2 = logger.OperationAt(LogEventLevel.Verbose).Time("Test");
+            Assert.Same(op, op2);
         }
     }
 }

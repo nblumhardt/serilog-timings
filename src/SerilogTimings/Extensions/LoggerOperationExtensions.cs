@@ -14,6 +14,8 @@
 
 using System;
 using Serilog;
+using Serilog.Events;
+using SerilogTimings.Configuration;
 
 namespace SerilogTimings.Extensions
 {
@@ -32,7 +34,7 @@ namespace SerilogTimings.Extensions
         /// <returns>An <see cref="Operation"/> object.</returns>
         public static IDisposable TimeOperation(this ILogger logger, string messageTemplate, params object[] args)
         {
-            return new Operation(logger, messageTemplate, args, CompletionBehaviour.Complete);
+            return new Operation(logger, messageTemplate, args, CompletionBehaviour.Complete, LogEventLevel.Information, LogEventLevel.Warning);
         }
 
         /// <summary>
@@ -46,7 +48,31 @@ namespace SerilogTimings.Extensions
         /// <returns>An <see cref="Operation"/> object.</returns>
         public static Operation BeginOperation(this ILogger logger, string messageTemplate, params object[] args)
         {
-            return new Operation(logger, messageTemplate, args, CompletionBehaviour.Abandon);
+            return new Operation(logger, messageTemplate, args, CompletionBehaviour.Abandon, LogEventLevel.Information, LogEventLevel.Warning);
+        }
+
+        /// <summary>
+        /// Configure the logging levels used for completion and abandonment events.
+        /// </summary>
+        /// <param name="logger">The logger through which the timing will be recorded.</param>
+        /// <param name="completion">The level of the event to write on operation completion.</param>
+        /// <param name="abandonment">The level of the event to write on operation abandonment; if not
+        /// specified, the <paramref name="completion"/> level will be used.</param>
+        /// <returns>An object from which timings with the configured levels can be made.</returns>
+        /// <remarks>If neither <paramref name="completion"/> nor <paramref name="abandonment"/> is enabled
+        /// on the logger at the time of the call, a no-op result is returned.</remarks>
+        public static LevelledOperation OperationAt(this ILogger logger, LogEventLevel completion, LogEventLevel? abandonment = null)
+        {
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
+
+            var appliedAbandonment = abandonment ?? completion;
+            if (!logger.IsEnabled(completion) &&
+                (appliedAbandonment == completion || !logger.IsEnabled(appliedAbandonment)))
+            {
+                return LevelledOperation.None;
+            }
+
+            return new LevelledOperation(logger, completion, appliedAbandonment);
         }
     }
 }

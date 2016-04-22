@@ -19,6 +19,7 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Events;
 using SerilogTimings.Extensions;
+using SerilogTimings.Configuration;
 
 namespace SerilogTimings
 {
@@ -62,8 +63,10 @@ namespace SerilogTimings
 
         IDisposable _popContext;
         CompletionBehaviour _completionBehaviour;
+        readonly LogEventLevel _completionLevel;
+        readonly LogEventLevel _abandonmentLevel;
 
-        internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour)
+        internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             if (messageTemplate == null) throw new ArgumentNullException(nameof(messageTemplate));
@@ -72,6 +75,8 @@ namespace SerilogTimings
             _messageTemplate = messageTemplate;
             _args = args;
             _completionBehaviour = completionBehaviour;
+            _completionLevel = completionLevel;
+            _abandonmentLevel = abandonmentLevel;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
             _stopwatch = Stopwatch.StartNew();
         }
@@ -102,6 +107,20 @@ namespace SerilogTimings
         }
 
         /// <summary>
+        /// Configure the logging levels used for completion and abandonment events.
+        /// </summary>
+        /// <param name="completion">The level of the event to write on operation completion.</param>
+        /// <param name="abandonment">The level of the event to write on operation abandonment; if not
+        /// specified, the <paramref name="completion"/> level will be used.</param>
+        /// <returns>An object from which timings with the configured levels can be made.</returns>
+        /// <remarks>If neither <paramref name="completion"/> nor <paramref name="abandonment"/> is enabled
+        /// on the logger at the time of the call, a no-op result is returned.</remarks>
+        public static LevelledOperation At(LogEventLevel completion, LogEventLevel? abandonment = null)
+        {
+            return Log.Logger.OperationAt(completion, abandonment);
+        }
+
+        /// <summary>
         /// Complete the timed operation. This will write the event and elapsed time to the log.
         /// </summary>
         public void Complete()
@@ -109,7 +128,7 @@ namespace SerilogTimings
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
 
-            Write(_target, LogEventLevel.Information, OutcomeCompleted);
+            Write(_target, _completionLevel, OutcomeCompleted);
         }
 
         /// <summary>
@@ -125,7 +144,7 @@ namespace SerilogTimings
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
 
-            Write(_target.ForContext(resultPropertyName, result, destructureObjects), LogEventLevel.Information, OutcomeCompleted);
+            Write(_target.ForContext(resultPropertyName, result, destructureObjects), _completionLevel, OutcomeCompleted);
         }
 
         /// <summary>
@@ -151,11 +170,11 @@ namespace SerilogTimings
                     break;
 
                 case CompletionBehaviour.Abandon:
-                    Write(_target, LogEventLevel.Warning, OutcomeAbandoned);
+                    Write(_target, _abandonmentLevel, OutcomeAbandoned);
                     break;
 
                 case CompletionBehaviour.Complete:
-                    Write(_target, LogEventLevel.Information, OutcomeCompleted);
+                    Write(_target, _completionLevel, OutcomeCompleted);
                     break;
 
                 default:
