@@ -1,10 +1,9 @@
 ﻿{
-  "version": "2.0.0-rc-*",
   "testRunner": "xunit",
   "dependencies": {
     "SerilogTimings": { "target": "project" },
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-build10015"
+    "dotnet-test-xunit": "1.0.0-rc2-build10025"
   },
   "frameworks": {
     "net4.5.2": {},
@@ -12,7 +11,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-rc2-3002702"
+          "version": "1.0.0"
         }
       },
       "imports": [
