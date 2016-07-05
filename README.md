@@ -1,4 +1,4 @@
-# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Pre Release](https://img.shields.io/nuget/vpre/SerilogTimings.svg?maxAge=2592000)](https://nuget.org/packages/serilogtimings)
+# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Release](https://img.shields.io/nuget/v/SerilogTimings.svg)](https://nuget.org/packages/serilogtimings)
 
 Serilog's support for structured data makes it a great way to collect timing information. It's easy 
 to get started with in development, because the timings are printed to the same output as other
@@ -18,10 +18,10 @@ information on a per-operation basis.
 The library is published as _SerilogTimings_ on NuGet.
 
 ```powershell
-Install-Package SerilogTimings -Pre -DependencyVersion Highest
+Install-Package SerilogTimings -DependencyVersion Highest
 ```
 
-.NET 4.5+ and .NET Core are supported. The package uses the Serilog 2.0 RC, which is compatible with both platforms.
+.NET 4.5+ and .NET Core are supported. The package uses Serilog 2.0, which is compatible with both platforms.
 
 ### Getting started
 
