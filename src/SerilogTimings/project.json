@@ -9,6 +9,7 @@
     "iconUrl": "https://raw.githubusercontent.com/nblumhardt/serilog-timings/master/asset/serilog-timings.png"
   },
   "buildOptions": {
+    "keyFile": "../../asset/SerilogTimings.snk",
     "xmlDoc": true,
     "warningsAsErrors": true
   },
