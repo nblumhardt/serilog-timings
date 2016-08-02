@@ -4,6 +4,7 @@ using Serilog.Events;
 using SerilogTimings.Extensions;
 using SerilogTimings.Tests.Support;
 using Xunit;
+using Serilog.Core.Enrichers;
 
 namespace SerilogTimings.Tests
 {
@@ -53,6 +54,19 @@ namespace SerilogTimings.Tests
             op.Complete("Value", 42);
             Assert.Equal(1, logger.Events.Count);
             Assert.True(logger.Events.Single().Properties.ContainsKey("Value"));
+        }
+
+        [Fact]
+        public void CompleteEnrichesLogEvent()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Complete(new PropertyEnricher("Value", 1), new PropertyEnricher("Value2", 2));
+
+            Assert.Equal(1, logger.Events.Count);
+            var logEvent = logger.Events.Single();
+            Assert.True(logEvent.Properties.ContainsKey("Value"));
+            Assert.True(logEvent.Properties.ContainsKey("Value2"));
         }
 
         [Fact]

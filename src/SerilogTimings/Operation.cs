@@ -20,6 +20,7 @@ using Serilog.Context;
 using Serilog.Events;
 using SerilogTimings.Extensions;
 using SerilogTimings.Configuration;
+using Serilog.Core;
 
 namespace SerilogTimings
 {
@@ -145,6 +146,20 @@ namespace SerilogTimings
                 return;
 
             Write(_target.ForContext(resultPropertyName, result, destructureObjects), _completionLevel, OutcomeCompleted);
+        }
+
+        /// <summary>
+        /// Complete the timed operation and enriches the log event with the provided enrichers.
+        /// </summary>
+        /// <param name="resultEnrichers">Enrichers that applied to the final log event.</param>
+        public void Complete(params ILogEventEnricher[] resultEnrichers)
+        {
+            if (resultEnrichers == null) throw new ArgumentNullException(nameof(resultEnrichers));
+
+            if (_completionBehaviour == CompletionBehaviour.Silent)
+                return;
+
+            Write(_target.ForContext(resultEnrichers), _completionLevel, OutcomeCompleted);
         }
 
         /// <summary>
