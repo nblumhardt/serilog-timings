@@ -116,7 +116,7 @@ namespace SerilogTimings.Tests
         }
 
         [Fact]
-        public void LoggedContextIsPreserved()
+        public void LoggerContextIsPreserved()
         {
             var logger = new CollectingLogger();
             var op = logger.Logger
