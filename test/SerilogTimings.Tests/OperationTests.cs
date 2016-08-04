@@ -114,5 +114,17 @@ namespace SerilogTimings.Tests
             var op2 = logger.OperationAt(LogEventLevel.Verbose).Time("Test");
             Assert.Same(op, op2);
         }
+
+        [Fact]
+        public void LoggerContextIsPreserved()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger
+                .ForContext<OperationTests>().BeginOperation("Test");
+            op.Complete();
+
+            var sourceContext = (logger.Events.Single().Properties["SourceContext"] as ScalarValue).Value;
+            Assert.Equal(sourceContext, typeof(OperationTests).FullName);
+        }
     }
 }
