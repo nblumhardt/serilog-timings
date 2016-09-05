@@ -196,9 +196,7 @@ namespace SerilogTimings
 
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
-            target
-                .ForContext<Operation>()
-                .Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
+            target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
 
             PopLogContext();
         }
