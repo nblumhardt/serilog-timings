@@ -61,7 +61,7 @@ Operations that can either _succeed or fail_, or _that produce a result_, can be
 `Operation.Begin()`:
 
 ```csharp
-using (var op = Operation.Begin("Retrieving orders for {CustomerId}", customer.Id)
+using (var op = Operation.Begin("Retrieving orders for {CustomerId}", customer.Id))
 {
 	// Timed block of code goes here
 
