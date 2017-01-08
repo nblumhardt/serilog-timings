@@ -147,5 +147,5 @@ pass parameters to these methods that mutate during the operation.
 
 [SerilogMetrics](https://github.com/serilog-metrics/serilog-metrics) is a mature metrics solution
 for Serilog that includes timings as well as counters, gauges and more. Serilog Timings is an 
-alternative implementaion of timings only, designed with some different stylistic preferences and
+alternative implementation of timings only, designed with some different stylistic preferences and
 goals. You should definitely check out SerilogMetrics as well, to see if it's more to your tastes!
