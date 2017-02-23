@@ -1,7 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+
 using Serilog;
 using Serilog.Events;
+
+using SerilogTimings;
 using SerilogTimings.Extensions;
+using SerilogTimings.Tests;
 using SerilogTimings.Tests.Support;
 using Xunit;
 
@@ -125,6 +132,27 @@ namespace SerilogTimings.Tests
 
             var sourceContext = (logger.Events.Single().Properties["SourceContext"] as ScalarValue).Value;
             Assert.Equal(sourceContext, typeof(OperationTests).FullName);
+        }
+
+        [Theory]
+        [InlineData(100, 250, LogEventLevel.Information)]
+        [InlineData(500, 250, LogEventLevel.Warning)]
+        public async Task WarnIfThresholdExceeded(int operationDurationInMs, int thresholdInMs, LogEventLevel thresholdLevel)
+        {
+            var operationDuration = TimeSpan.FromMilliseconds(operationDurationInMs);
+            var threshold = TimeSpan.FromMilliseconds(thresholdInMs);
+            var logger = new CollectingLogger();
+
+            var operation = logger.Logger.BeginOperation(
+                o => o.Elapsed > threshold ? thresholdLevel : LogEventLevel.Information,
+                o => LogEventLevel.Fatal,
+                "Test");
+
+            await Task.Delay(operationDuration);
+
+            operation.Complete();
+
+            Assert.Equal(thresholdLevel, logger.Events.Single().Level);
         }
     }
 }

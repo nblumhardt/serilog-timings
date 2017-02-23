@@ -52,6 +52,30 @@ namespace SerilogTimings.Extensions
         }
 
         /// <summary>
+        /// Begin a new timed operation. The return value must be completed using <see cref="Operation.Complete()"/>,
+        /// or disposed to record abandonment.
+        /// </summary>
+        /// <param name="logger">The logger through which the timing will be recorded.</param>
+        /// <param name="dynamicCompletionLevel">A <see cref="Func{Operation, LogEventLevel}"/> that is lazily evaluated to determine the log event level. Useful in evaluating <see cref="Operation.Elapsed"/> to determine the log event level at run-time.</param>
+        /// <param name="dynamicAbandonmentLevel">A <see cref="Func{Operation, LogEventLevel}"/> that is lazily evaluated to determine the log event level. Useful in evaluating <see cref="Operation.Elapsed"/> to determine the log event level at run-time.</param>
+        /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
+        /// <param name="args">Arguments to the log message. These will be stored and captured only when the
+        /// operation completes, so do not pass arguments that are mutated during the operation.</param>
+        /// <returns>An <see cref="Operation"/> object.</returns>
+        public static Operation BeginOperation(this ILogger logger, Func<Operation, LogEventLevel> dynamicCompletionLevel, Func<Operation, LogEventLevel> dynamicAbandonmentLevel, string messageTemplate, params object[] args)
+        {
+            if (dynamicCompletionLevel == null)
+            {
+                dynamicCompletionLevel = operation => LogEventLevel.Information;
+            }
+            if (dynamicAbandonmentLevel == null)
+            {
+                dynamicAbandonmentLevel = operation => LogEventLevel.Warning;
+            }
+            return new Operation(logger, messageTemplate, args, CompletionBehaviour.Abandon, dynamicCompletionLevel, dynamicAbandonmentLevel);
+        }
+
+        /// <summary>
         /// Configure the logging levels used for completion and abandonment events.
         /// </summary>
         /// <param name="logger">The logger through which the timing will be recorded.</param>

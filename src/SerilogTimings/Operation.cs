@@ -63,10 +63,15 @@ namespace SerilogTimings
 
         IDisposable _popContext;
         CompletionBehaviour _completionBehaviour;
-        readonly LogEventLevel _completionLevel;
-        readonly LogEventLevel _abandonmentLevel;
+        readonly Lazy<LogEventLevel> _completionLevel;
+        readonly Lazy<LogEventLevel> _abandonmentLevel;
 
         internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
+            : this(target, messageTemplate, args, completionBehaviour, operation => completionLevel, operation => abandonmentLevel)
+        {
+        }
+
+        internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, Func<Operation, LogEventLevel> completionLevel, Func<Operation, LogEventLevel> abandonmentLevel)
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             if (messageTemplate == null) throw new ArgumentNullException(nameof(messageTemplate));
@@ -75,8 +80,8 @@ namespace SerilogTimings
             _messageTemplate = messageTemplate;
             _args = args;
             _completionBehaviour = completionBehaviour;
-            _completionLevel = completionLevel;
-            _abandonmentLevel = abandonmentLevel;
+            _completionLevel = new Lazy<LogEventLevel>(() => completionLevel(this));
+            _abandonmentLevel = new Lazy<LogEventLevel>(() => abandonmentLevel(this));
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
             _stopwatch = Stopwatch.StartNew();
         }
@@ -194,13 +199,13 @@ namespace SerilogTimings
             _popContext = null;
         }
 
-        void Write(ILogger target, LogEventLevel level, string outcome)
+        void Write(ILogger target, Lazy<LogEventLevel> level, string outcome)
         {
             _completionBehaviour = CompletionBehaviour.Silent;
 
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
-            target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
+            target.Write(level.Value, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
         }
     }
 }
