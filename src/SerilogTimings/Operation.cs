@@ -164,7 +164,6 @@ namespace SerilogTimings
         {
             _stopwatch.Stop();
             _completionBehaviour = CompletionBehaviour.Silent;
-            PopLogContext();
         }
 
         /// <summary>
@@ -191,11 +190,6 @@ namespace SerilogTimings
                     throw new InvalidOperationException("Unknown underlying state value");
             }
 
-            PopLogContext();
-        }
-
-        void PopLogContext()
-        {
             _popContext?.Dispose();
             _popContext = null;
         }
@@ -207,8 +201,6 @@ namespace SerilogTimings
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
             target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
-
-            PopLogContext();
         }
     }
 }
