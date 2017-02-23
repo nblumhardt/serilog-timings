@@ -59,7 +59,8 @@ namespace SerilogTimings
         readonly ILogger _target;
         readonly string _messageTemplate;
         readonly object[] _args;
-        readonly Stopwatch _stopwatch;
+        readonly long _start;
+        long? _finish;
 
         IDisposable _popContext;
         CompletionBehaviour _completionBehaviour;
@@ -78,13 +79,13 @@ namespace SerilogTimings
             _completionLevel = completionLevel;
             _abandonmentLevel = abandonmentLevel;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
-            _stopwatch = Stopwatch.StartNew();
+            _start = Stopwatch.GetTimestamp();
         }
 
         /// <summary>
         /// Returns the elapsed time of the operation as a <see cref="TimeSpan"/>
         /// </summary>
-        public TimeSpan Elapsed => _stopwatch.Elapsed;
+        public TimeSpan Elapsed => TimeSpan.FromTicks((_finish ?? Stopwatch.GetTimestamp()) - _start);
 
         /// <summary>
         /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
@@ -130,7 +131,7 @@ namespace SerilogTimings
         /// </summary>
         public void Complete()
         {
-            _stopwatch.Stop();
+            _finish = Stopwatch.GetTimestamp();
 
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
@@ -146,7 +147,7 @@ namespace SerilogTimings
         /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
         public void Complete(string resultPropertyName, object result, bool destructureObjects = false)
         {
-            _stopwatch.Stop();
+            _finish = Stopwatch.GetTimestamp();
 
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
 
@@ -162,7 +163,7 @@ namespace SerilogTimings
         /// </summary>
         public void Cancel()
         {
-            _stopwatch.Stop();
+            _finish = Stopwatch.GetTimestamp();
             _completionBehaviour = CompletionBehaviour.Silent;
             PopLogContext();
         }
@@ -204,7 +205,7 @@ namespace SerilogTimings
         {
             _completionBehaviour = CompletionBehaviour.Silent;
 
-            var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
+            var elapsed = Elapsed.TotalMilliseconds;
 
             target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
