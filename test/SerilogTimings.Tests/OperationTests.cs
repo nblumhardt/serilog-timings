@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Serilog;
 using Serilog.Events;
-
-using SerilogTimings;
 using SerilogTimings.Extensions;
-using SerilogTimings.Tests;
 using SerilogTimings.Tests.Support;
 using Xunit;
 
