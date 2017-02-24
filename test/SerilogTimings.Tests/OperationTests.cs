@@ -132,11 +132,14 @@ namespace SerilogTimings.Tests
         [Fact]
         public async Task ElapsedTimeIsAccurate()
         {
+            const int expectedDurationInMs = 1000;
+            const int toleranceInMs = 50;
+
             var logger = new CollectingLogger();
             var op = logger.Logger.BeginOperation("Test");
-            await Task.Delay(1000);
+            await Task.Delay(expectedDurationInMs);
             op.Complete();
-            Assert.InRange(op.Elapsed, TimeSpan.FromMilliseconds(990), TimeSpan.FromMilliseconds(1010));
+            Assert.InRange(op.Elapsed, TimeSpan.FromMilliseconds(expectedDurationInMs - toleranceInMs), TimeSpan.FromMilliseconds(expectedDurationInMs + toleranceInMs));
         }
 
         [Fact]
