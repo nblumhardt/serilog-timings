@@ -85,7 +85,7 @@ namespace SerilogTimings
         /// <summary>
         /// Returns the elapsed time of the operation as a <see cref="TimeSpan"/>
         /// </summary>
-        public TimeSpan Elapsed => TimeSpan.FromTicks((_finish ?? Stopwatch.GetTimestamp()) - _start);
+        public TimeSpan Elapsed => TimeSpan.FromSeconds((double)((_finish ?? Stopwatch.GetTimestamp()) - _start) / Stopwatch.Frequency);
 
         /// <summary>
         /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
@@ -131,7 +131,7 @@ namespace SerilogTimings
         /// </summary>
         public void Complete()
         {
-            _finish = Stopwatch.GetTimestamp();
+            StopTimer();
 
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
@@ -147,7 +147,7 @@ namespace SerilogTimings
         /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
         public void Complete(string resultPropertyName, object result, bool destructureObjects = false)
         {
-            _finish = Stopwatch.GetTimestamp();
+            StopTimer();
 
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
 
@@ -163,7 +163,7 @@ namespace SerilogTimings
         /// </summary>
         public void Cancel()
         {
-            _finish = Stopwatch.GetTimestamp();
+            StopTimer();
             _completionBehaviour = CompletionBehaviour.Silent;
             PopLogContext();
         }
@@ -210,6 +210,14 @@ namespace SerilogTimings
             target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
             PopLogContext();
+        }
+
+        void StopTimer()
+        {
+            if (_finish == null)
+            {
+                _finish = Stopwatch.GetTimestamp();
+            }
         }
     }
 }

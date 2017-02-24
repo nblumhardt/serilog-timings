@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
 using SerilogTimings.Extensions;
@@ -125,6 +127,70 @@ namespace SerilogTimings.Tests
 
             var sourceContext = (logger.Events.Single().Properties["SourceContext"] as ScalarValue).Value;
             Assert.Equal(sourceContext, typeof(OperationTests).FullName);
+        }
+
+        [Fact]
+        public async Task ElapsedTimeIsAccurate()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            await Task.Delay(1000);
+            op.Complete();
+            Assert.InRange(op.Elapsed, TimeSpan.FromMilliseconds(990), TimeSpan.FromMilliseconds(1010));
+        }
+
+        [Fact]
+        public async Task CompletingAnOperationStopsTheTimer()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            await Task.Delay(200);
+            op.Complete();
+            var elapsed1 = op.Elapsed;
+            await Task.Delay(200);
+            var elapsed2 = op.Elapsed;
+            Assert.Equal(elapsed1, elapsed2);
+        }
+
+        [Fact]
+        public async Task CompletingAnOperationMoreThanOnceDoesNotExtendElapsed()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            await Task.Delay(200);
+            op.Complete();
+            var elapsed1 = op.Elapsed;
+            await Task.Delay(200);
+            op.Complete();
+            var elapsed2 = op.Elapsed;
+            Assert.Equal(elapsed1, elapsed2);
+        }
+
+        [Fact]
+        public async Task CancelingAnOperationStopsTheTimer()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            await Task.Delay(200);
+            op.Cancel();
+            var elapsed1 = op.Elapsed;
+            await Task.Delay(200);
+            var elapsed2 = op.Elapsed;
+            Assert.Equal(elapsed1, elapsed2);
+        }
+
+        [Fact]
+        public async Task CancelingAnOperationMoreThanOnceDoesNotExtendElapsed()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            await Task.Delay(200);
+            op.Cancel();
+            var elapsed1 = op.Elapsed;
+            await Task.Delay(200);
+            op.Cancel();
+            var elapsed2 = op.Elapsed;
+            Assert.Equal(elapsed1, elapsed2);
         }
     }
 }
