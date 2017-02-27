@@ -66,6 +66,7 @@ namespace SerilogTimings
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
+        readonly Lazy<TimeSpan> _elapsed;
 
         internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
         {
@@ -80,12 +81,19 @@ namespace SerilogTimings
             _abandonmentLevel = abandonmentLevel;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
             _start = Stopwatch.GetTimestamp();
+
+            _elapsed = new Lazy<TimeSpan>(() =>
+            {
+                var elapsed = (_finish ?? Stopwatch.GetTimestamp()) - _start;
+                var ticks = (double)elapsed / Stopwatch.Frequency * TimeSpan.TicksPerSecond;
+                return TimeSpan.FromTicks((long)ticks);
+            });
         }
 
         /// <summary>
         /// Returns the elapsed time of the operation as a <see cref="TimeSpan"/>
         /// </summary>
-        public TimeSpan Elapsed => TimeSpan.FromSeconds((double)((_finish ?? Stopwatch.GetTimestamp()) - _start) / Stopwatch.Frequency);
+        public TimeSpan Elapsed => _elapsed.Value;
 
         /// <summary>
         /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
