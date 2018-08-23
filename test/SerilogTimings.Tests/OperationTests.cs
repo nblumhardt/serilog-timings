@@ -10,6 +10,19 @@ namespace SerilogTimings.Tests
     public class OperationTests
     {
         [Fact]
+        public void TestForArrayAsParams()
+        {
+            var logger = new CollectingLogger();
+
+            var op = logger.Logger.TimeOperation("Test {Identifier}", new object[] { "a", "b" });
+            op.Dispose();
+
+            var messageText = logger.Events.First().RenderMessage();
+            Assert.True(messageText.StartsWith("Test [\"a\", \"b\"] \"completed\" in"));
+            Assert.True(messageText.EndsWith(" ms"));
+        }
+
+        [Fact]
         public void DisposeRecordsCompletionOfTimings()
         {
             var logger = new CollectingLogger();
