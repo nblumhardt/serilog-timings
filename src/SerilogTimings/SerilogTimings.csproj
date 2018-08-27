@@ -4,7 +4,7 @@
     <Description>Extends Serilog with timed operations</Description>
     <VersionPrefix>2.2.1</VersionPrefix>
     <Authors>nblumhardt</Authors>
-    <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard1.0;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>SerilogTimings</AssemblyName>
@@ -26,19 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog" Version="2.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
-    <PackageReference Include="Microsoft.CSharp" Version="4.0.1" />
-    <PackageReference Include="System.Collections" Version="4.0.11" />
-    <PackageReference Include="System.Linq" Version="4.1.0" />
-    <PackageReference Include="System.Runtime" Version="4.1.0" />
-    <PackageReference Include="System.Threading" Version="4.0.11" />
   </ItemGroup>
 
 </Project>
