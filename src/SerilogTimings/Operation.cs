@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Serilog;
 using Serilog.Context;
 using Serilog.Core;
@@ -67,6 +68,7 @@ namespace SerilogTimings
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
+        private Exception _exception;
 
         internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
         {
@@ -198,7 +200,7 @@ namespace SerilogTimings
 
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
-            target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
+            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
 
             PopLogContext();
         }
@@ -240,6 +242,18 @@ namespace SerilogTimings
         public Operation EnrichWith(string propertyName, object value, bool destructureObjects = false)
         {
             _target = _target.ForContext(propertyName, value, destructureObjects);
+            return this;
+        }
+
+        /// <summary>
+        /// Enriches resulting log event with the given exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <returns>Same <see cref="Operation"/>.</returns>
+        /// <seealso cref="LogEvent.Exception"/>
+        public Operation SetException(Exception exception)
+        {
+            _exception = exception;
             return this;
         }
     }

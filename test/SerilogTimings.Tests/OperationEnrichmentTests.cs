@@ -1,6 +1,4 @@
 ﻿using System;
-using System.CodeDom;
-using System.Linq;
 using Serilog.Core;
 using Serilog.Events;
 using SerilogTimings.Extensions;
@@ -141,6 +139,88 @@ namespace SerilogTimings.Tests
             AssertScalarPropertyOfSingleEvent(logger, "Answer", 42);
             AssertScalarPropertyOfSingleEvent(logger, "Don't", "panic");
             AssertScalarPropertyOfSingleEvent(logger, "And bring", "towel");
+        }
+
+        [Fact]
+        public void DisposedOperationDoesNotCaptureException()
+        {
+            var logger = new CollectingLogger();
+            Assert.Throws<InvalidOperationException>((Action) (() =>
+                {
+                    using (logger.Logger.BeginOperation("Test"))
+                    {
+                        throw new InvalidOperationException();
+                    }
+                })
+            );
+            Assert.Null(Assert.Single(logger.Events).Exception);
+        }
+
+        [Fact]
+        public void DisposeRecordsSetException()
+        {
+            var exception = new InvalidOperationException();
+            var logger = new CollectingLogger();
+            Assert.Throws<InvalidOperationException>((Action) (() =>
+                {
+                    using (var op = logger.Logger.BeginOperation("Test"))
+                    {
+                        try
+                        {
+                            throw exception;
+                        }
+                        catch (Exception e)
+                        {
+                            op.SetException(e);
+                            throw;
+                        }
+                    }
+                })
+            );
+            Assert.Same(exception, Assert.Single(logger.Events).Exception);
+        }
+
+        [Fact]
+        public void CompleteRecordsSetException()
+        {
+            var exception = new InvalidOperationException();
+            var logger = new CollectingLogger();
+            using (var op = logger.Logger.BeginOperation("Test"))
+            {
+                try
+                {
+                    throw exception;
+                }
+                catch (Exception e)
+                {
+                    op.SetException(e);
+                    op.Complete();
+                }
+            }
+            Assert.Same(exception, Assert.Single(logger.Events).Exception);
+        }
+
+        [Fact]
+        public void SetExceptionAndRethrowSkipsCatchBlock()
+        {
+            var exception = new InvalidOperationException();
+            var logger = new CollectingLogger();
+            Assert.Throws<InvalidOperationException>((Action) (() =>
+                {
+                    using (var op = logger.Logger.BeginOperation("Test"))
+                    {
+                        try
+                        {
+                            throw exception;
+                        }
+                        catch (Exception e) when (op.SetExceptionAndRethrow(e))
+                        {
+                            throw new Exception("This catch block should be skipped");
+                        }
+                    }
+                })
+            );
+            Assert.Same(exception, Assert.Single(logger.Events).Exception);
         }
 
         private class Enricher : ILogEventEnricher
