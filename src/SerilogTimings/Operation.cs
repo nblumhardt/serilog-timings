@@ -13,10 +13,12 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Serilog;
 using Serilog.Context;
+using Serilog.Core;
 using Serilog.Events;
 using SerilogTimings.Extensions;
 using SerilogTimings.Configuration;
@@ -56,7 +58,7 @@ namespace SerilogTimings
 
         const string OutcomeCompleted = "completed", OutcomeAbandoned = "abandoned";
 
-        readonly ILogger _target;
+        ILogger _target;
         readonly string _messageTemplate;
         readonly object[] _args;
         readonly Stopwatch _stopwatch;
@@ -65,6 +67,7 @@ namespace SerilogTimings
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
+        private Exception _exception;
 
         internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
         {
@@ -196,9 +199,61 @@ namespace SerilogTimings
 
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
-            target.Write(level, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
+            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
 
             PopLogContext();
+        }
+
+        /// <summary>
+        /// Enriches resulting log event via the provided enricher.
+        /// </summary>
+        /// <param name="enricher">Enricher that applies in the context.</param>
+        /// <returns>Same <see cref="Operation"/>.</returns>
+        /// <seealso cref="ILogger.ForContext(ILogEventEnricher)"/>
+        public Operation EnrichWith(ILogEventEnricher enricher)
+        {
+            _target = _target.ForContext(enricher);
+            return this;
+        }
+
+        /// <summary>
+        /// Enriches resulting log event via the provided enrichers.
+        /// </summary>
+        /// <param name="enrichers">Enrichers that apply in the context.</param>
+        /// <returns>A logger that will enrich log events as specified.</returns>
+        /// <returns>Same <see cref="Operation"/>.</returns>
+        /// <seealso cref="ILogger.ForContext(IEnumerable{ILogEventEnricher})"/>
+        public Operation EnrichWith(IEnumerable<ILogEventEnricher> enrichers)
+        {
+            _target = _target.ForContext(enrichers);
+            return this;
+        }
+
+        /// <summary>
+        /// Enriches resulting log event with the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property. Must be non-empty.</param>
+        /// <param name="value">The property value.</param>
+        /// <param name="destructureObjects">If true, the value will be serialized as a structured
+        /// object if possible; if false, the object will be recorded as a scalar or simple array.</param>
+        /// <returns>Same <see cref="Operation"/>.</returns>
+        /// <seealso cref="ILogger.ForContext(string,object,bool)"/>
+        public Operation EnrichWith(string propertyName, object value, bool destructureObjects = false)
+        {
+            _target = _target.ForContext(propertyName, value, destructureObjects);
+            return this;
+        }
+
+        /// <summary>
+        /// Enriches resulting log event with the given exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <returns>Same <see cref="Operation"/>.</returns>
+        /// <seealso cref="LogEvent.Exception"/>
+        public Operation SetException(Exception exception)
+        {
+            _exception = exception;
+            return this;
         }
     }
 }
