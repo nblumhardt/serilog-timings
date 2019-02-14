@@ -151,6 +151,17 @@ namespace SerilogTimings
         }
 
         /// <summary>
+        /// Abandon the timed operation. This will write the event and elapsed time to the log.
+        /// </summary>
+        public void Abandon()
+        {
+            if (_completionBehaviour == CompletionBehaviour.Silent)
+                return;
+
+            Write(_target, _abandonmentLevel, OutcomeAbandoned);
+        }
+
+        /// <summary>
         /// Cancel the timed operation. After calling, no event will be recorded either through
         /// completion or disposal.
         /// </summary>

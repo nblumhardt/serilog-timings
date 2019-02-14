@@ -65,6 +65,18 @@ namespace SerilogTimings.Tests
         }
 
         [Fact]
+        public void AbandonRecordsAbandonmentOfBegunOperations()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon();
+            AssertSingleCompletionEvent(logger, LogEventLevel.Warning, OutcomeAbandoned);
+
+            op.Dispose();
+            Assert.Single(logger.Events);
+        }
+
+        [Fact]
         public void CompleteRecordsResultsOfOperations()
         {
             var logger = new CollectingLogger();
@@ -93,6 +105,43 @@ namespace SerilogTimings.Tests
             op.Complete();
             op.Dispose();
             Assert.Empty(logger.Events);
+        }
+
+        [Fact]
+        public void OnceCanceledAbandonDoesNotRecordCompletionOfOperations()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Cancel();
+            op.Abandon();
+            op.Dispose();
+            Assert.Empty(logger.Events);
+        }
+
+        [Fact]
+        public void OnceCompletedAbandonDoesNotRecordAbandonmentOfOperations()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Complete();
+            AssertSingleCompletionEvent(logger, LogEventLevel.Information, OutcomeCompleted);
+
+            op.Abandon();
+            op.Dispose();
+            Assert.Single(logger.Events);
+        }
+
+        [Fact]
+        public void OnceAbandonedCompleteDoesNotRecordAbandonmentOfOperations()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon();
+            AssertSingleCompletionEvent(logger, LogEventLevel.Warning, OutcomeAbandoned);
+
+            op.Complete();
+            op.Dispose();
+            Assert.Single(logger.Events);
         }
 
         [Fact]
