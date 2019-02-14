@@ -126,5 +126,40 @@ namespace SerilogTimings.Tests
             var sourceContext = (logger.Events.Single().Properties["SourceContext"] as ScalarValue).Value;
             Assert.Equal(sourceContext, typeof(OperationTests).FullName);
         }
+
+        [Fact]
+        public void CompleteRecordsOperationId()
+        {
+            var innerLogger = new CollectingLogger();
+            var logger = new LoggerConfiguration()
+                .WriteTo.Logger(innerLogger.Logger)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+            
+            var op = logger.BeginOperation("Test");
+            op.Complete();
+            Assert.True(
+                Assert.Single(innerLogger.Events)
+                    .Properties.ContainsKey(nameof(Operation.Properties.OperationId))
+            );
+        }
+
+        [Fact]
+        public void AbandonRecordsOperationId()
+        {
+            var innerLogger = new CollectingLogger();
+            var logger = new LoggerConfiguration()
+                .WriteTo.Logger(innerLogger.Logger)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+            
+            var op = logger.BeginOperation("Test");
+            op.Dispose();
+            Assert.True(
+                Assert.Single(innerLogger.Events)
+                    .Properties.ContainsKey(nameof(Operation.Properties.OperationId))
+            );
+        }
+
     }
 }
