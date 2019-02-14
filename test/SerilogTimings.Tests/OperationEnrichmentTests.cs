@@ -123,6 +123,28 @@ namespace SerilogTimings.Tests
         }
 
         [Fact]
+        public void CompleteOverloadWithEnricherRecordsPropertyAddedViaEnricher()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Complete(new Enricher("Value", 42));
+            AssertScalarPropertyOfSingleEvent(logger, "Value", 42);
+        }
+
+        [Fact]
+        public void CompleteOverloadWithEnrichersRecordsPropertiesAddedViaEnrichers()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Complete(new ILogEventEnricher[] {
+                new Enricher("Question", "unknown"),
+                new Enricher("Answer", 42)
+            });
+            AssertScalarPropertyOfSingleEvent(logger, "Question", "unknown");
+            AssertScalarPropertyOfSingleEvent(logger, "Answer", 42);
+        }
+
+        [Fact]
         public void PropertyBonanza()
         {
             var logger = new CollectingLogger();

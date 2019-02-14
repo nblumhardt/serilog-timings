@@ -13,6 +13,8 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using Serilog.Core;
 
 namespace SerilogTimings
 {
@@ -49,5 +51,25 @@ namespace SerilogTimings
             operation.SetException(exception);
             return false;
         }
+
+        /// <summary>
+        /// Complete the timed operation enriching it with provided enricher.
+        /// </summary>
+        /// <param name="operation">Operation to enrich and complete.</param>
+        /// <param name="enricher">Enricher that applies in the context.</param>
+        /// <seealso cref="Operation.Complete()"/>
+        /// <seealso cref="Operation.EnrichWith(ILogEventEnricher)"/>
+        public static void Complete(this Operation operation, ILogEventEnricher enricher)
+            => operation.EnrichWith(enricher).Complete();
+
+        /// <summary>
+        /// Complete the timed operation enriching it with provided enrichers.
+        /// </summary>
+        /// <param name="operation">Operation to enrich and complete.</param>
+        /// <param name="enrichers">Enrichers that apply in the context.</param>
+        /// <seealso cref="Operation.Complete()"/>
+        /// <seealso cref="Operation.EnrichWith(IEnumerable{ILogEventEnricher})"/>
+        public static void Complete(this Operation operation, IEnumerable<ILogEventEnricher> enrichers)
+            => operation.EnrichWith(enrichers).Complete();
     }
 }
