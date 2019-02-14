@@ -71,5 +71,47 @@ namespace SerilogTimings
         /// <seealso cref="Operation.EnrichWith(IEnumerable{ILogEventEnricher})"/>
         public static void Complete(this Operation operation, IEnumerable<ILogEventEnricher> enrichers)
             => operation.EnrichWith(enrichers).Complete();
+
+        /// <summary>
+        /// Abandon the timed operation with an included result value.
+        /// </summary>
+        /// <param name="operation">Operation to enrich and abandon.</param>
+        /// <param name="resultPropertyName">The name for the property to attach to the event.</param>
+        /// <param name="result">The result value.</param>
+        /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
+        /// <seealso cref="Operation.Abandon()"/>
+        /// <seealso cref="Operation.EnrichWith(string,object,bool)"/>
+        public static void Abandon(this Operation operation, string resultPropertyName, object result, bool destructureObjects = false)
+            => operation.EnrichWith(resultPropertyName, result, destructureObjects).Abandon();
+
+        /// <summary>
+        /// Abandon the timed operation enriching it with provided enricher.
+        /// </summary>
+        /// <param name="operation">Operation to enrich and abandon.</param>
+        /// <param name="enricher">Enricher that applies in the context.</param>
+        /// <seealso cref="Operation.Abandon()"/>
+        /// <seealso cref="Operation.EnrichWith(ILogEventEnricher)"/>
+        public static void Abandon(this Operation operation, ILogEventEnricher enricher)
+            => operation.EnrichWith(enricher).Abandon();
+
+        /// <summary>
+        /// Abandon the timed operation enriching it with provided enrichers.
+        /// </summary>
+        /// <param name="operation">Operation to enrich and abandon.</param>
+        /// <param name="enrichers">Enrichers that apply in the context.</param>
+        /// <seealso cref="Operation.Abandon()"/>
+        /// <seealso cref="Operation.EnrichWith(IEnumerable{ILogEventEnricher})"/>
+        public static void Abandon(this Operation operation, IEnumerable<ILogEventEnricher> enrichers)
+            => operation.EnrichWith(enrichers).Abandon();
+
+        /// <summary>
+        /// Abandon the timed operation with an included exception.
+        /// </summary>
+        /// <param name="operation">Operation to enrich and abandon.</param>
+        /// <param name="exception">Enricher related to the event.</param>
+        /// <seealso cref="Operation.Abandon()"/>
+        /// <seealso cref="Operation.SetException(Exception)"/>
+        public static void Abandon(this Operation operation, Exception exception)
+            => operation.SetException(exception).Abandon();
     }
 }

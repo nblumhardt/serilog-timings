@@ -245,6 +245,56 @@ namespace SerilogTimings.Tests
             Assert.Same(exception, Assert.Single(logger.Events).Exception);
         }
 
+        [Fact]
+        public void AbandonRecordsResultsOfOperations()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon("Value", 42);
+            AssertScalarPropertyOfSingleEvent(logger, "Value", 42);
+        }
+
+        [Fact]
+        public void AbandonOverloadWithEnricherRecordsPropertyAddedViaEnricher()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon(new Enricher("Value", 42));
+            AssertScalarPropertyOfSingleEvent(logger, "Value", 42);
+        }
+
+        [Fact]
+        public void AbandonOverloadWithEnrichersRecordsPropertiesAddedViaEnrichers()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon(new ILogEventEnricher[] {
+                new Enricher("Question", "unknown"),
+                new Enricher("Answer", 42)
+            });
+            AssertScalarPropertyOfSingleEvent(logger, "Question", "unknown");
+            AssertScalarPropertyOfSingleEvent(logger, "Answer", 42);
+        }
+
+        [Fact]
+        public void AbandonRecordsException()
+        {
+            var exception = new InvalidOperationException();
+            var logger = new CollectingLogger();
+            using (var op = logger.Logger.BeginOperation("Test"))
+            {
+                try
+                {
+                    throw exception;
+                }
+                catch (Exception e)
+                {
+                    op.Abandon(e);
+                }
+            }
+            Assert.Same(exception, Assert.Single(logger.Events).Exception);
+        }
+
         private class Enricher : ILogEventEnricher
         {
             private string _propertyName;
