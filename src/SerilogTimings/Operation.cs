@@ -82,7 +82,8 @@ namespace SerilogTimings
         }
 
         /// <summary>
-        /// Returns the elapsed time of the operation as a <see cref="TimeSpan"/>
+        /// Returns the elapsed time of the operation. This will update during the operation, and be frozen once the
+        /// operation is completed or canceled.
         /// </summary>
         public TimeSpan Elapsed => _stopwatch.Elapsed;
 
