@@ -85,6 +85,12 @@ namespace SerilogTimings
         }
 
         /// <summary>
+        /// Returns the elapsed time of the operation. This will update during the operation, and be frozen once the
+        /// operation is completed or canceled.
+        /// </summary>
+        public TimeSpan Elapsed => _stopwatch.Elapsed;
+
+        /// <summary>
         /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
         /// or disposed to record abandonment.
         /// </summary>
@@ -128,6 +134,8 @@ namespace SerilogTimings
         /// </summary>
         public void Complete()
         {
+            _stopwatch.Stop();
+
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
 
@@ -143,6 +151,8 @@ namespace SerilogTimings
         public void Complete(string resultPropertyName, object result, bool destructureObjects = false)
         {
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
+
+            _stopwatch.Stop();
 
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
@@ -167,6 +177,7 @@ namespace SerilogTimings
         /// </summary>
         public void Cancel()
         {
+            _stopwatch.Stop();
             _completionBehaviour = CompletionBehaviour.Silent;
             PopLogContext();
         }
@@ -210,7 +221,7 @@ namespace SerilogTimings
 
             var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
 
-            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
+            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
             PopLogContext();
         }
