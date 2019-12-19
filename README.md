@@ -1,4 +1,4 @@
-# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Release](https://img.shields.io/nuget/v/SerilogTimings.svg)](https://nuget.org/packages/serilogtimings)
+# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/rgluby771a4rkwul?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings) [![NuGet Release](https://img.shields.io/nuget/v/SerilogTimings.svg)](https://nuget.org/packages/serilogtimings)
 
 Serilog's support for structured data makes it a great way to collect timing information. It's easy 
 to get started with in development, because the timings are printed to the same output as other
