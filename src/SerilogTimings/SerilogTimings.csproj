@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Extends Serilog with timed operations</Description>
+    <VersionPrefix>2.3.0</VersionPrefix>
+    <Authors>nblumhardt</Authors>
+    <TargetFrameworks>net45;netstandard1.0;netstandard2.0</TargetFrameworks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>SerilogTimings</AssemblyName>
+    <AssemblyOriginatorKeyFile>../../asset/SerilogTimings.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>SerilogTimings</PackageId>
+    <PackageTags>serilog;metrics;timings;operations</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/nblumhardt/serilog-timings/master/asset/serilog-timings.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/nblumhardt/serilog-timings</PackageProjectUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.3.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/hkb5woe4ek7im249/branch/master?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings/branch/master) [![NuGet Release](https://img.shields.io/nuget/v/SerilogTimings.svg)](https://nuget.org/packages/serilogtimings)
+# Serilog Timings [![Build status](https://ci.appveyor.com/api/projects/status/rgluby771a4rkwul?svg=true)](https://ci.appveyor.com/project/NicholasBlumhardt/serilog-timings) [![NuGet Release](https://img.shields.io/nuget/v/SerilogTimings.svg)](https://nuget.org/packages/serilogtimings)
 
 Serilog's support for structured data makes it a great way to collect timing information. It's easy 
 to get started with in development, because the timings are printed to the same output as other
@@ -61,7 +61,7 @@ Operations that can either _succeed or fail_, or _that produce a result_, can be
 `Operation.Begin()`:
 
 ```csharp
-using (var op = Operation.Begin("Retrieving orders for {CustomerId}", customer.Id)
+using (var op = Operation.Begin("Retrieving orders for {CustomerId}", customer.Id))
 {
 	// Timed block of code goes here
 
@@ -147,5 +147,5 @@ pass parameters to these methods that mutate during the operation.
 
 [SerilogMetrics](https://github.com/serilog-metrics/serilog-metrics) is a mature metrics solution
 for Serilog that includes timings as well as counters, gauges and more. Serilog Timings is an 
-alternative implementaion of timings only, designed with some different stylistic preferences and
+alternative implementation of timings only, designed with some different stylistic preferences and
 goals. You should definitely check out SerilogMetrics as well, to see if it's more to your tastes!
