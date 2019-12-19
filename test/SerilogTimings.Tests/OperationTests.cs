@@ -15,7 +15,7 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.TimeOperation("Test");
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.Equal(LogEventLevel.Information, logger.Events.Single().Level);
         }
 
@@ -25,11 +25,11 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.BeginOperation("Test");
             op.Complete();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.Equal(LogEventLevel.Information, logger.Events.Single().Level);
 
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
         }
 
         [Fact]
@@ -38,11 +38,11 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.BeginOperation("Test");
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
 
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events); 
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.BeginOperation("Test");
             op.Complete("Value", 42);
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.True(logger.Events.Single().Properties.ContainsKey("Value"));
         }
 
@@ -62,7 +62,7 @@ namespace SerilogTimings.Tests
             var op = logger.Logger.BeginOperation("Test");
             op.Cancel();
             op.Dispose();
-            Assert.Equal(0, logger.Events.Count);
+            Assert.True(logger.Events.Count == 0);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace SerilogTimings.Tests
             op.Cancel();
             op.Complete();
             op.Dispose();
-            Assert.Equal(0, logger.Events.Count);
+            Assert.True(logger.Events.Count == 0);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.OperationAt(LogEventLevel.Error).Time("Test");
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
         }
 
@@ -92,7 +92,7 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.OperationAt(LogEventLevel.Error).Begin("Test");
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
         }
 
@@ -102,7 +102,7 @@ namespace SerilogTimings.Tests
             var logger = new CollectingLogger();
             var op = logger.Logger.OperationAt(LogEventLevel.Error, LogEventLevel.Fatal).Begin("Test");
             op.Dispose();
-            Assert.Equal(1, logger.Events.Count);
+            Assert.Single(logger.Events);
             Assert.Equal(LogEventLevel.Fatal, logger.Events.Single().Level);
         }
 
