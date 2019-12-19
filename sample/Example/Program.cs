@@ -16,7 +16,7 @@ namespace Example
 
             Log.Information("Hello, world!");
 
-            var count = 10000;
+            var count = 11000;
             using (var op = Operation.Begin("Adding {Count} successive integers", count))
             {
                 var sum = Enumerable.Range(0, count).Sum();
