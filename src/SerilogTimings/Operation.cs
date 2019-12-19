@@ -147,9 +147,9 @@ namespace SerilogTimings
         /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
         public void Complete(string resultPropertyName, object result, bool destructureObjects = false)
         {
-            _stopwatch.Stop();
-
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
+
+            _stopwatch.Stop();
 
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
