@@ -15,7 +15,7 @@
     <PackageTags>serilog;metrics;timings;operations</PackageTags>
     <PackageIconUrl>https://raw.githubusercontent.com/nblumhardt/serilog-timings/master/asset/serilog-timings.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/nblumhardt/serilog-timings</PackageProjectUrl>
-    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>

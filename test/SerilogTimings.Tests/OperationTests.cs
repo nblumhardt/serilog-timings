@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
 using SerilogTimings.Extensions;
@@ -29,6 +31,11 @@ namespace SerilogTimings.Tests
             Assert.Equal(expectedOutcome, GetScalarPropertyValue<string>(ev, nameof(Operation.Properties.Outcome)));
             GetScalarPropertyValue<double>(ev, nameof(Operation.Properties.Elapsed));
             return ev;
+        }
+        private static double GetElapsedMilliseconds(CollectingLogger logger)
+        {
+            var elaspsed = (double)((ScalarValue)logger.Events.Single().Properties[nameof(Operation.Properties.Elapsed)]).Value;
+            return elaspsed;
         }
 
         [Fact]
@@ -200,7 +207,7 @@ namespace SerilogTimings.Tests
                 .WriteTo.Logger(innerLogger.Logger)
                 .Enrich.FromLogContext()
                 .CreateLogger();
-            
+
             var op = logger.BeginOperation("Test");
             op.Complete();
             Assert.True(
@@ -217,7 +224,7 @@ namespace SerilogTimings.Tests
                 .WriteTo.Logger(innerLogger.Logger)
                 .Enrich.FromLogContext()
                 .CreateLogger();
-            
+
             var op = logger.BeginOperation("Test");
             op.Dispose();
             Assert.True(
@@ -226,5 +233,20 @@ namespace SerilogTimings.Tests
             );
         }
 
+        [Theory]
+        [InlineData(10, 5)]
+        [InlineData(100, 5)]
+        [InlineData(1000, 5)]
+        //hard timing numbers smell but should catch any order of magnitude errors in frequency calculations at least.
+        public async Task TimingTolerance(int delay, int operationTolerance)
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.TimeOperation("Test");
+            await Task.Delay(delay);
+            op.Dispose();
+
+            var elaspsed = GetElapsedMilliseconds(logger);
+            Assert.InRange(elaspsed, delay, delay + operationTolerance);
+        }
     }
 }

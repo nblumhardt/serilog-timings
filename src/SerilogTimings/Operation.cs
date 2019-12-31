@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Serilog;
 using Serilog.Context;
 using Serilog.Core;
 using Serilog.Events;
-using SerilogTimings.Extensions;
 using SerilogTimings.Configuration;
+using SerilogTimings.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace SerilogTimings
 {
@@ -61,7 +61,8 @@ namespace SerilogTimings
         ILogger _target;
         readonly string _messageTemplate;
         readonly object[] _args;
-        readonly Stopwatch _stopwatch;
+        readonly long _startTicks;
+        long _stopTicks = 0;
 
         IDisposable _popContext;
         CompletionBehaviour _completionBehaviour;
@@ -81,14 +82,51 @@ namespace SerilogTimings
             _completionLevel = completionLevel;
             _abandonmentLevel = abandonmentLevel;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
-            _stopwatch = Stopwatch.StartNew();
+            _startTicks = GetDateTimeTicks();
+        }
+
+        private static long GetDateTimeTicks()
+        {
+            long stopwatchTicks = Stopwatch.GetTimestamp();
+            if (Stopwatch.Frequency != TimeSpan.TicksPerSecond)
+            {
+                // convert stopwatch ticks to DateTime ticks
+                double ticks = stopwatchTicks;
+                var conversionFactor = ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency);
+                ticks *= conversionFactor;
+                return unchecked((long)ticks);
+            }
+            else
+            {
+                return stopwatchTicks;
+            }
         }
 
         /// <summary>
         /// Returns the elapsed time of the operation. This will update during the operation, and be frozen once the
         /// operation is completed or canceled.
         /// </summary>
-        public TimeSpan Elapsed => _stopwatch.Elapsed;
+        public TimeSpan Elapsed
+        {
+            get
+            {
+                var stop = _stopTicks == 0 ? GetDateTimeTicks() : _stopTicks;
+                var elapsedTicks = stop - _startTicks;
+
+                //System.Diagnosticts.Stopwatch source suggests -ve values are possible
+                if (elapsedTicks < 0)
+                {
+                    // When measuring small time periods the StopWatch.Elapsed* 
+                    // properties can return negative values.  This is due to 
+                    // bugs in the basic input/output system (BIOS) or the hardware
+                    // abstraction layer (HAL) on machines with variable-speed CPUs
+                    // (e.g. Intel SpeedStep).
+
+                    elapsedTicks = 0;
+                }
+                return TimeSpan.FromTicks(elapsedTicks);
+            }
+        }
 
         /// <summary>
         /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
@@ -134,8 +172,6 @@ namespace SerilogTimings
         /// </summary>
         public void Complete()
         {
-            _stopwatch.Stop();
-
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
 
@@ -151,8 +187,6 @@ namespace SerilogTimings
         public void Complete(string resultPropertyName, object result, bool destructureObjects = false)
         {
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
-
-            _stopwatch.Stop();
 
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
@@ -177,7 +211,6 @@ namespace SerilogTimings
         /// </summary>
         public void Cancel()
         {
-            _stopwatch.Stop();
             _completionBehaviour = CompletionBehaviour.Silent;
             PopLogContext();
         }
@@ -209,6 +242,14 @@ namespace SerilogTimings
             PopLogContext();
         }
 
+        void StopTiming()
+        {
+            if (_stopTicks == 0)
+            {
+                _stopTicks = GetDateTimeTicks();
+            }
+        }
+
         void PopLogContext()
         {
             _popContext?.Dispose();
@@ -217,9 +258,10 @@ namespace SerilogTimings
 
         void Write(ILogger target, LogEventLevel level, string outcome)
         {
+            StopTiming();
             _completionBehaviour = CompletionBehaviour.Silent;
 
-            var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
+            var elapsed = Elapsed.TotalMilliseconds;
 
             target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
