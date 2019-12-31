@@ -82,14 +82,51 @@ namespace SerilogTimings
             _completionLevel = completionLevel;
             _abandonmentLevel = abandonmentLevel;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
-            _startTicks = Stopwatch.GetTimestamp();
+            _startTicks = GetDateTimeTicks();
+        }
+
+        private static long GetDateTimeTicks()
+        {
+            long stopwatchTicks = Stopwatch.GetTimestamp();
+            if (Stopwatch.Frequency != TimeSpan.TicksPerSecond)
+            {
+                // convert stopwatch ticks to DateTime ticks
+                double ticks = stopwatchTicks;
+                var conversionFactor = ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency);
+                ticks *= conversionFactor;
+                return unchecked((long)ticks);
+            }
+            else
+            {
+                return stopwatchTicks;
+            }
         }
 
         /// <summary>
         /// Returns the elapsed time of the operation. This will update during the operation, and be frozen once the
         /// operation is completed or canceled.
         /// </summary>
-        public TimeSpan Elapsed => _stopTicks == 0 ? TimeSpan.FromTicks(Stopwatch.GetTimestamp() - _startTicks) : TimeSpan.FromTicks(_stopTicks - _startTicks);
+        public TimeSpan Elapsed
+        {
+            get
+            {
+                var stop = _stopTicks == 0 ? GetDateTimeTicks() : _stopTicks;
+                var elapsedTicks = stop - _startTicks;
+
+                //System.Diagnosticts.Stopwatch source suggests -ve values are possible
+                if (elapsedTicks < 0)
+                {
+                    // When measuring small time periods the StopWatch.Elapsed* 
+                    // properties can return negative values.  This is due to 
+                    // bugs in the basic input/output system (BIOS) or the hardware
+                    // abstraction layer (HAL) on machines with variable-speed CPUs
+                    // (e.g. Intel SpeedStep).
+
+                    elapsedTicks = 0;
+                }
+                return TimeSpan.FromTicks(elapsedTicks);
+            }
+        }
 
         /// <summary>
         /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
@@ -209,7 +246,7 @@ namespace SerilogTimings
         {
             if (_stopTicks == 0)
             {
-                _stopTicks = Stopwatch.GetTimestamp();
+                _stopTicks = GetDateTimeTicks();
             }
         }
 
