@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
@@ -12,10 +10,11 @@ namespace SerilogTimings.Tests
 {
     public class OperationTests
     {
-        private const string OutcomeCompleted = "completed";
-        private const string OutcomeAbandoned = "abandoned";
+        const string OutcomeCompleted = "completed";
+        const string OutcomeAbandoned = "abandoned";
 
-        private static LogEvent AssertSingleCompletionEvent(CollectingLogger logger, LogEventLevel expectedLevel,
+        // ReSharper disable once UnusedMethodReturnValue.Local
+        static LogEvent AssertSingleCompletionEvent(CollectingLogger logger, LogEventLevel expectedLevel,
             string expectedOutcome)
         {
             T GetScalarPropertyValue<T>(LogEvent e, string key)
@@ -32,10 +31,11 @@ namespace SerilogTimings.Tests
             GetScalarPropertyValue<double>(ev, nameof(Operation.Properties.Elapsed));
             return ev;
         }
-        private static double GetElapsedMilliseconds(CollectingLogger logger)
+
+        static double GetElapsedMilliseconds(CollectingLogger logger)
         {
-            var elaspsed = (double)((ScalarValue)logger.Events.Single().Properties[nameof(Operation.Properties.Elapsed)]).Value;
-            return elaspsed;
+            var elapsed = (double)((ScalarValue)logger.Events.Single().Properties[nameof(Operation.Properties.Elapsed)]).Value;
+            return elapsed;
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace SerilogTimings.Tests
                 .ForContext<OperationTests>().BeginOperation("Test");
             op.Complete();
 
-            var sourceContext = (logger.Events.Single().Properties["SourceContext"] as ScalarValue).Value;
+            var sourceContext = ((ScalarValue)logger.Events.Single().Properties["SourceContext"]).Value;
             Assert.Equal(sourceContext, typeof(OperationTests).FullName);
         }
 
@@ -234,9 +234,9 @@ namespace SerilogTimings.Tests
         }
 
         [Theory]
-        [InlineData(10, 5)]
-        [InlineData(100, 5)]
-        [InlineData(1000, 5)]
+        [InlineData(10, 20)]
+        [InlineData(100, 20)]
+        [InlineData(1000, 50)]
         //hard timing numbers smell but should catch any order of magnitude errors in frequency calculations at least.
         public async Task TimingTolerance(int delay, int operationTolerance)
         {
@@ -245,8 +245,31 @@ namespace SerilogTimings.Tests
             await Task.Delay(delay);
             op.Dispose();
 
-            var elaspsed = GetElapsedMilliseconds(logger);
-            Assert.InRange(elaspsed, delay, delay + operationTolerance);
+            var elapsed = GetElapsedMilliseconds(logger);
+            Assert.InRange(elapsed, delay, delay + operationTolerance);
+        }
+
+        [Fact]
+        public async Task ElapsedUpdatesDuringOperation()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            var first = op.Elapsed;
+            await Task.Delay(10);
+            var second = op.Elapsed;
+            await Task.Delay(10);
+            op.Complete();
+            var third = op.Elapsed;
+            await Task.Delay(10);
+            var fourth = op.Elapsed;
+            await Task.Delay(10);
+            op.Complete();
+            var fifth = op.Elapsed;
+
+            Assert.NotEqual(first, second);
+            Assert.NotEqual(second, third);
+            Assert.Equal(third, fourth);
+            Assert.Equal(fourth, fifth);
         }
     }
 }

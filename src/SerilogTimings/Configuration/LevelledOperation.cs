@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using Serilog;
 using Serilog.Events;
 
@@ -24,30 +23,28 @@ namespace SerilogTimings.Configuration
     /// <seealso cref="Operation.At"/>
     public class LevelledOperation
     {
-        readonly Operation _cachedResult;
+        readonly Operation? _cachedResult;
 
-        readonly ILogger _logger;
+        readonly ILogger? _logger;
         readonly LogEventLevel _completion;
         readonly LogEventLevel _abandonment;
 
         internal LevelledOperation(ILogger logger, LogEventLevel completion, LogEventLevel abandonment)
         {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _completion = completion;
             _abandonment = abandonment;
         }
 
         LevelledOperation(Operation cachedResult)
         {
-            if (cachedResult == null) throw new ArgumentNullException(nameof(cachedResult));
-            _cachedResult = cachedResult;
+            _cachedResult = cachedResult ?? throw new ArgumentNullException(nameof(cachedResult));
         }
 
         internal static LevelledOperation None { get; } = new LevelledOperation(
             new Operation(
                 new LoggerConfiguration().CreateLogger(),
-                "", new object[0],
+                "", Array.Empty<object>(),
                 CompletionBehaviour.Silent,
                 LogEventLevel.Fatal,
                 LogEventLevel.Fatal));
@@ -62,7 +59,7 @@ namespace SerilogTimings.Configuration
         /// <returns>An <see cref="Operation"/> object.</returns>
         public Operation Begin(string messageTemplate, params object[] args)
         {
-            return _cachedResult ?? new Operation(_logger, messageTemplate, args, CompletionBehaviour.Abandon, _completion, _abandonment);
+            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Abandon, _completion, _abandonment);
         }
 
         /// <summary>
@@ -74,7 +71,7 @@ namespace SerilogTimings.Configuration
         /// <returns>An <see cref="Operation"/> object.</returns>
         public IDisposable Time(string messageTemplate, params object[] args)
         {
-            return _cachedResult ?? new Operation(_logger, messageTemplate, args, CompletionBehaviour.Complete, _completion, _abandonment);
+            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Complete, _completion, _abandonment);
         }
     }
 }

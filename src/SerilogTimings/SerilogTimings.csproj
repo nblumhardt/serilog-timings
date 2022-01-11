@@ -1,31 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Extends Serilog with timed operations</Description>
-    <VersionPrefix>2.3.1</VersionPrefix>
-    <Authors>nblumhardt</Authors>
-    <TargetFrameworks>net45;netstandard1.0;netstandard2.0</TargetFrameworks>
+    <Description>Extend Serilog with timed operations.</Description>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <Authors>nblumhardt;SerilogTimings Contributors</Authors>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>SerilogTimings</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
     <AssemblyOriginatorKeyFile>../../asset/SerilogTimings.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>SerilogTimings</PackageId>
     <PackageTags>serilog;metrics;timings;operations</PackageTags>
-    <PackageIconUrl>https://raw.githubusercontent.com/nblumhardt/serilog-timings/master/asset/serilog-timings.png</PackageIconUrl>
+    <PackageIcon>serilog-timings.png</PackageIcon>
     <PackageProjectUrl>https://github.com/nblumhardt/serilog-timings</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="2.3.0" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all" />
+    <Content Include="../../asset/serilog-timings.png" />
   </ItemGroup>
 
 </Project>

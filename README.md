@@ -21,7 +21,7 @@ The library is published as _SerilogTimings_ on NuGet.
 Install-Package SerilogTimings -DependencyVersion Highest
 ```
 
-.NET 4.5+ and .NET Core are supported. The package uses Serilog 2.0, which is compatible with both platforms.
+The package works on all currently-supported .NET versions.
 
 ### Getting started
 
