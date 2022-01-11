@@ -22,7 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all" />
-    <Content Include="../../asset/serilog-timings.png" />
+    <None Include="../../asset/serilog-timings.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
 </Project>
