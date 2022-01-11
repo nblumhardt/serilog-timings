@@ -234,11 +234,10 @@ namespace SerilogTimings.Tests
         }
 
         [Theory]
-        [InlineData(10, 20)]
-        [InlineData(100, 20)]
-        [InlineData(1000, 50)]
-        //hard timing numbers smell but should catch any order of magnitude errors in frequency calculations at least.
-        public async Task TimingTolerance(int delay, int operationTolerance)
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        public async Task TimingWithinOrderOfMagnitude(int delay)
         {
             var logger = new CollectingLogger();
             var op = logger.Logger.TimeOperation("Test");
@@ -246,7 +245,7 @@ namespace SerilogTimings.Tests
             op.Dispose();
 
             var elapsed = GetElapsedMilliseconds(logger);
-            Assert.InRange(elapsed, delay - operationTolerance / 5, delay + operationTolerance);
+            Assert.InRange(elapsed, delay * 0.5, delay * 2);
         }
 
         [Fact]
