@@ -309,7 +309,7 @@ namespace SerilogTimings
         /// <returns>Same <see cref="Operation"/>.</returns>
         public Operation WithWarningThreshold(TimeSpan warningThreshold)
         {
-            _warningThreshold = warningThreshold ;
+            _warningThreshold = warningThreshold;
             return this;
         }
     }
