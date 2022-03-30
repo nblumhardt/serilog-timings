@@ -68,7 +68,8 @@ namespace SerilogTimings
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
         Exception? _exception;
-        
+        TimeSpan? _warningThreshold;
+
         internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
         {
             _target = target ?? throw new ArgumentNullException(nameof(target));
@@ -240,6 +241,10 @@ namespace SerilogTimings
 
             var elapsed = Elapsed.TotalMilliseconds;
 
+            level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
+                ? LogEventLevel.Warning
+                : level; 
+
             target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
             PopLogContext();
@@ -294,6 +299,17 @@ namespace SerilogTimings
         public Operation SetException(Exception exception)
         {
             _exception = exception;
+            return this;
+        }
+        
+        /// <summary>
+        /// Logs all operations that take longer than `warningThreshold` as Warnings even if they completed successfully.
+        /// </summary>
+        /// <param name="warningThreshold">Enricher that applies in the context.</param>
+        /// <returns>Same <see cref="Operation"/>.</returns>
+        public Operation WithWarningThreshold(TimeSpan warningThreshold)
+        {
+            _warningThreshold = warningThreshold ;
             return this;
         }
     }
