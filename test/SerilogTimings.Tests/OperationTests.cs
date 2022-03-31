@@ -289,5 +289,23 @@ namespace SerilogTimings.Tests
 
             Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
         }
+        
+        [Fact]
+        public async Task LongOperationsDoNotLowerTheOverallLoggingLevel()
+        {
+            var operationDuration = TimeSpan.FromMilliseconds(100);
+            
+            var logger = new CollectingLogger();
+            var op = logger.Logger
+                .OperationAt(LogEventLevel.Information, LogEventLevel.Error)
+                .Begin("Test")
+                .WithWarningThreshold(operationDuration);
+            
+            await Task.Delay(operationDuration + operationDuration);
+            
+            op.Abandon();
+
+            Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
+        }
     }
 }
