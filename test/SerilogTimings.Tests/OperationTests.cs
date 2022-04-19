@@ -307,5 +307,23 @@ namespace SerilogTimings.Tests
 
             Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
         }
+        
+        [Fact]
+        public async Task LongOperationsAreLoggedAsWarningsWithDebug()
+        {
+            var operationDuration = TimeSpan.FromMilliseconds(100);
+
+            var logger = new CollectingLogger();
+            var op = logger.Logger
+                .OperationAt(LogEventLevel.Debug)  // Debug is off by default...
+                .Begin("Test")
+                .WithWarningThreshold(operationDuration); // ... seems like this should be emitted?
+
+            await Task.Delay(operationDuration + operationDuration);
+
+            op.Complete();
+
+            Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
+        }
     }
 }

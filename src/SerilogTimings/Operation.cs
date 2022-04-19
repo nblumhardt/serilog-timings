@@ -303,7 +303,7 @@ namespace SerilogTimings
         }
         
         /// <summary>
-        /// Logs all operations that take longer than `warningThreshold` as Warnings even if they completed successfully.
+        /// Logs all operations that take longer than `warningThreshold` as Warnings even if they complete successfully.
         /// </summary>
         /// <param name="warningThreshold">Enricher that applies in the context.</param>
         /// <returns>Same <see cref="Operation"/>.</returns>
