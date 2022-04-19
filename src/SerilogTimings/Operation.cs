@@ -67,9 +67,12 @@ namespace SerilogTimings
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
+        private readonly TimeSpan? _warningThreshold;
         Exception? _exception;
         
-        internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
+        internal Operation(ILogger target, string messageTemplate, object[] args,
+            CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel,
+            TimeSpan? warningThreshold = null)
         {
             _target = target ?? throw new ArgumentNullException(nameof(target));
             _messageTemplate = messageTemplate ?? throw new ArgumentNullException(nameof(messageTemplate));
@@ -77,6 +80,7 @@ namespace SerilogTimings
             _completionBehaviour = completionBehaviour;
             _completionLevel = completionLevel;
             _abandonmentLevel = abandonmentLevel;
+            _warningThreshold = warningThreshold;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
             _start = GetTimestamp();
         }
@@ -239,6 +243,10 @@ namespace SerilogTimings
             _completionBehaviour = CompletionBehaviour.Silent;
 
             var elapsed = Elapsed.TotalMilliseconds;
+            
+            level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
+                ? LogEventLevel.Warning
+                : level; 
 
             target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 

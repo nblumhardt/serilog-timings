@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
@@ -269,6 +270,40 @@ namespace SerilogTimings.Tests
             Assert.NotEqual(second, third);
             Assert.Equal(third, fourth);
             Assert.Equal(fourth, fifth);
+        }
+        
+        [Fact]
+        public async Task LongOperationsAreLoggedAsWarnings()
+        {
+            var operationDuration = TimeSpan.FromMilliseconds(100);
+
+            var logger = new CollectingLogger();
+            var op = logger.Logger
+                .OperationAt(LogEventLevel.Debug, warningThreshold: operationDuration)
+                .Begin("Test");
+
+            await Task.Delay(operationDuration + operationDuration);
+
+            op.Complete();
+
+            Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
+        }
+
+        [Fact]
+        public async Task LongOperationsDoNotLowerTheOverallLoggingLevel()
+        {
+            var operationDuration = TimeSpan.FromMilliseconds(100);
+
+            var logger = new CollectingLogger();
+            var op = logger.Logger
+                .OperationAt(LogEventLevel.Information, LogEventLevel.Error, operationDuration)
+                .Begin("Test");
+
+            await Task.Delay(operationDuration + operationDuration);
+
+            op.Abandon();
+
+            Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
         }
     }
 }

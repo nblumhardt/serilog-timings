@@ -28,12 +28,14 @@ namespace SerilogTimings.Configuration
         readonly ILogger? _logger;
         readonly LogEventLevel _completion;
         readonly LogEventLevel _abandonment;
+        private readonly TimeSpan? _warningThreshold;
 
-        internal LevelledOperation(ILogger logger, LogEventLevel completion, LogEventLevel abandonment)
+        internal LevelledOperation(ILogger logger, LogEventLevel completion, LogEventLevel abandonment, TimeSpan? warningThreshold = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _completion = completion;
             _abandonment = abandonment;
+            _warningThreshold = warningThreshold;
         }
 
         LevelledOperation(Operation cachedResult)
@@ -59,7 +61,7 @@ namespace SerilogTimings.Configuration
         /// <returns>An <see cref="Operation"/> object.</returns>
         public Operation Begin(string messageTemplate, params object[] args)
         {
-            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Abandon, _completion, _abandonment);
+            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Abandon, _completion, _abandonment, _warningThreshold);
         }
 
         /// <summary>
@@ -71,7 +73,7 @@ namespace SerilogTimings.Configuration
         /// <returns>An <see cref="Operation"/> object.</returns>
         public IDisposable Time(string messageTemplate, params object[] args)
         {
-            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Complete, _completion, _abandonment);
+            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Complete, _completion, _abandonment, _warningThreshold);
         }
     }
 }
