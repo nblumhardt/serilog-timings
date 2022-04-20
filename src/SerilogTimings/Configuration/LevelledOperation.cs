@@ -28,7 +28,7 @@ namespace SerilogTimings.Configuration
         readonly ILogger? _logger;
         readonly LogEventLevel _completion;
         readonly LogEventLevel _abandonment;
-        private readonly TimeSpan? _warningThreshold;
+        readonly TimeSpan? _warningThreshold;
 
         internal LevelledOperation(ILogger logger, LogEventLevel completion, LogEventLevel abandonment, TimeSpan? warningThreshold = null)
         {
