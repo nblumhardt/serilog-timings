@@ -114,7 +114,7 @@ These otherwise behave identically to `Operation.Time()` and `Operation.Begin()`
 ### `LogContext` support
 
 If your application enables the Serilog `LogContext` feature using `Enrich.FromLogContext()` on
-the `LoggerConfiguration`, _SerilogTimings_ will add an `OperationId` property to all events inside
+the `LoggerConfiguration`, Serilog Timings will add an `OperationId` property to all events inside
 timing blocks automatically.
 
 This is **highly recommended**, because it makes it much easier to trace from a timing result back 
