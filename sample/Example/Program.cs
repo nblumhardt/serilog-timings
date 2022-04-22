@@ -12,7 +12,7 @@ try
     Log.Information("Hello, world!");
 
     const int count = 10000;
-    using (var op = Operation.Begin("Adding {Count} successive integers", count))
+    using (var op = Operation.BeginWrite("Adding {Count} successive integers", count))
     {
         var sum = Enumerable.Range(0, count).Sum();
         Log.Information("This event is tagged with an operation id");

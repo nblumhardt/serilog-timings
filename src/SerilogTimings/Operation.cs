@@ -102,6 +102,22 @@ namespace SerilogTimings
         {
             return Log.Logger.BeginOperation(messageTemplate, args);
         }
+        /// <summary>
+        /// The same as Begin() plus writing a log item indicating the start of the operation.
+        /// </summary>
+        /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
+        /// <param name="args">Arguments to the log message. These will be stored and captured only when the
+        /// operation completes, so do not pass arguments that are mutated during the operation.</param>
+        /// <returns>An <see cref="Operation"/> object.</returns>
+        public static Operation BeginWrite(string messageTemplate, params object[] args)
+        {
+            var op = Log.Logger.BeginOperation(messageTemplate, args);
+            if (op._completionBehaviour != CompletionBehaviour.Silent)
+            {
+                op._target.Write(op._completionLevel, op._exception, $"{op._messageTemplate} started", op._args);
+            }
+            return op;
+        }
 
         /// <summary>
         /// Begin a new timed operation. The return value must be disposed to complete the operation.
