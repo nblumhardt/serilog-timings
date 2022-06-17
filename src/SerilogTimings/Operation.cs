@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Serilog;
 using Serilog.Context;
 using Serilog.Core;
 using Serilog.Events;
-using SerilogTimings.Extensions;
 using SerilogTimings.Configuration;
+using SerilogTimings.Extensions;
+using System.Diagnostics;
 
 namespace SerilogTimings
 {
@@ -37,6 +34,7 @@ namespace SerilogTimings
         /// <summary>
         /// Property names attached to events by <see cref="Operation"/>s.
         /// </summary>
+        // ReSharper disable once MemberCanBePrivate.Global
         public enum Properties
         {
             /// <summary>
@@ -57,31 +55,39 @@ namespace SerilogTimings
         };
 
         const string OutcomeCompleted = "completed", OutcomeAbandoned = "abandoned";
+        static readonly long StopwatchToTimeSpanTicks = Stopwatch.Frequency / TimeSpan.TicksPerSecond;
 
         ILogger _target;
         readonly string _messageTemplate;
         readonly object[] _args;
-        readonly Stopwatch _stopwatch;
+        readonly long _start;
+        long? _stop;
 
         IDisposable _popContext;
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
-        private Exception _exception;
-
-        internal Operation(ILogger target, string messageTemplate, object[] args, CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel)
+        private readonly TimeSpan? _warningThreshold;
+        Exception? _exception;
+        
+        internal Operation(ILogger target, string messageTemplate, object[] args,
+            CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel,
+            TimeSpan? warningThreshold = null)
         {
-            if (target == null) throw new ArgumentNullException(nameof(target));
-            if (messageTemplate == null) throw new ArgumentNullException(nameof(messageTemplate));
-            if (args == null) throw new ArgumentNullException(nameof(args));
-            _target = target;
-            _messageTemplate = messageTemplate;
-            _args = args;
+            _target = target ?? throw new ArgumentNullException(nameof(target));
+            _messageTemplate = messageTemplate ?? throw new ArgumentNullException(nameof(messageTemplate));
+            _args = args ?? throw new ArgumentNullException(nameof(args));
             _completionBehaviour = completionBehaviour;
             _completionLevel = completionLevel;
             _abandonmentLevel = abandonmentLevel;
+            _warningThreshold = warningThreshold;
             _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
-            _stopwatch = Stopwatch.StartNew();
+            _start = GetTimestamp();
+        }
+
+        static long GetTimestamp()
+        {
+            return Stopwatch.GetTimestamp() / StopwatchToTimeSpanTicks;
         }
 
         /// <summary>
@@ -121,6 +127,29 @@ namespace SerilogTimings
         public static LevelledOperation At(LogEventLevel completion, LogEventLevel? abandonment = null)
         {
             return Log.Logger.OperationAt(completion, abandonment);
+        }
+
+        /// <summary>
+        /// Returns the elapsed time of the operation. This will update during the operation, and be frozen once the
+        /// operation is completed or canceled.
+        /// </summary>
+        public TimeSpan Elapsed
+        {
+            get
+            {
+                var stop = _stop ?? GetTimestamp();
+                var elapsedTicks = stop - _start;
+
+                if (elapsedTicks < 0)
+                {
+                    // When measuring small time periods the StopWatch.Elapsed*  properties can return negative values.
+                    // This is due to bugs in the basic input/output system (BIOS) or the hardware abstraction layer
+                    // (HAL) on machines with variable-speed CPUs (e.g. Intel SpeedStep).
+                    return TimeSpan.Zero;
+                }
+                
+                return TimeSpan.FromTicks(elapsedTicks);
+            }
         }
 
         /// <summary>
@@ -198,19 +227,28 @@ namespace SerilogTimings
             PopLogContext();
         }
 
+        void StopTiming()
+        {
+            _stop ??= GetTimestamp();
+        }
+
         void PopLogContext()
         {
-            _popContext?.Dispose();
-            _popContext = null;
+            _popContext.Dispose();
         }
 
         void Write(ILogger target, LogEventLevel level, string outcome)
         {
+            StopTiming();
             _completionBehaviour = CompletionBehaviour.Silent;
 
-            var elapsed = _stopwatch.Elapsed.TotalMilliseconds;
+            var elapsed = Elapsed.TotalMilliseconds;
+            
+            level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
+                ? LogEventLevel.Warning
+                : level; 
 
-            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] {outcome, elapsed }).ToArray());
+            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
             PopLogContext();
         }

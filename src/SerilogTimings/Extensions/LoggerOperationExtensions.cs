@@ -50,7 +50,7 @@ namespace SerilogTimings.Extensions
         {
             return new Operation(logger, messageTemplate, args, CompletionBehaviour.Abandon, LogEventLevel.Information, LogEventLevel.Warning);
         }
-
+        
         /// <summary>
         /// Configure the logging levels used for completion and abandonment events.
         /// </summary>
@@ -58,10 +58,11 @@ namespace SerilogTimings.Extensions
         /// <param name="completion">The level of the event to write on operation completion.</param>
         /// <param name="abandonment">The level of the event to write on operation abandonment; if not
         /// specified, the <paramref name="completion"/> level will be used.</param>
+        /// <param name="warningThreshold">The threshold which determines whether the timing will be recorded as warning</param>
         /// <returns>An object from which timings with the configured levels can be made.</returns>
         /// <remarks>If neither <paramref name="completion"/> nor <paramref name="abandonment"/> is enabled
         /// on the logger at the time of the call, a no-op result is returned.</remarks>
-        public static LevelledOperation OperationAt(this ILogger logger, LogEventLevel completion, LogEventLevel? abandonment = null)
+        public static LevelledOperation OperationAt(this ILogger logger, LogEventLevel completion, LogEventLevel? abandonment = null, TimeSpan? warningThreshold = null)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
 
@@ -72,7 +73,7 @@ namespace SerilogTimings.Extensions
                 return LevelledOperation.None;
             }
 
-            return new LevelledOperation(logger, completion, appliedAbandonment);
+            return new LevelledOperation(logger, completion, appliedAbandonment, warningThreshold);
         }
     }
 }

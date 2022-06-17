@@ -9,7 +9,7 @@ namespace SerilogTimings.Tests
 {
     public class OperationEnrichmentTests
     {
-        private static void AssertScalarPropertyOfSingleEvent<T>(CollectingLogger logger, string propertyName, T expected)
+        static void AssertScalarPropertyOfSingleEvent<T>(CollectingLogger logger, string propertyName, T expected)
         {
             var ev = Assert.Single(logger.Events);
             Assert.True(ev.Properties.TryGetValue(propertyName, out var value));
@@ -295,10 +295,10 @@ namespace SerilogTimings.Tests
             Assert.Same(exception, Assert.Single(logger.Events).Exception);
         }
 
-        private class Enricher : ILogEventEnricher
+        class Enricher : ILogEventEnricher
         {
-            private string _propertyName;
-            private object _value;
+            string _propertyName;
+            object _value;
 
             public Enricher(string propertyName, object value)
             {

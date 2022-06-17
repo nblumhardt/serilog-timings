@@ -21,7 +21,7 @@ The library is published as _SerilogTimings_ on NuGet.
 Install-Package SerilogTimings -DependencyVersion Highest
 ```
 
-.NET 4.5+ and .NET Core are supported. The package uses Serilog 2.0, which is compatible with both platforms.
+The package works on all currently-supported .NET versions.
 
 ### Getting started
 
@@ -114,7 +114,7 @@ These otherwise behave identically to `Operation.Time()` and `Operation.Begin()`
 ### `LogContext` support
 
 If your application enables the Serilog `LogContext` feature using `Enrich.FromLogContext()` on
-the `LoggerConfiguration`, _SerilogTimings_ will add an `OperationId` property to all events inside
+the `LoggerConfiguration`, Serilog Timings will add an `OperationId` property to all events inside
 timing blocks automatically.
 
 This is **highly recommended**, because it makes it much easier to trace from a timing result back 
