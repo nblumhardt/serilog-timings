@@ -55,7 +55,7 @@ namespace SerilogTimings
         };
 
         const string OutcomeCompleted = "completed", OutcomeAbandoned = "abandoned";
-        static readonly long StopwatchToTimeSpanTicks = Stopwatch.Frequency / TimeSpan.TicksPerSecond;
+        static readonly double StopwatchToTimeSpanTicks = (double)Stopwatch.Frequency / TimeSpan.TicksPerSecond;
 
         ILogger _target;
         readonly string _messageTemplate;
@@ -87,7 +87,7 @@ namespace SerilogTimings
 
         static long GetTimestamp()
         {
-            return Stopwatch.GetTimestamp() / StopwatchToTimeSpanTicks;
+            return unchecked((long)(Stopwatch.GetTimestamp() / StopwatchToTimeSpanTicks));
         }
 
         /// <summary>
