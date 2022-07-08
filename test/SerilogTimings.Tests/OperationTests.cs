@@ -246,7 +246,7 @@ namespace SerilogTimings.Tests
             op.Dispose();
 
             var elapsed = GetElapsedMilliseconds(logger);
-            Assert.InRange(elapsed, delay * 0.5, delay * 5);
+            Assert.InRange(elapsed, delay * 0.2, delay * 8);
         }
 
         [Fact]
