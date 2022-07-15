@@ -55,7 +55,7 @@ namespace SerilogTimings
         };
 
         const string OutcomeCompleted = "completed", OutcomeAbandoned = "abandoned";
-        static readonly long StopwatchToTimeSpanTicks = Stopwatch.Frequency / TimeSpan.TicksPerSecond;
+        static readonly double StopwatchToTimeSpanTicks = (double)Stopwatch.Frequency / TimeSpan.TicksPerSecond;
 
         ILogger _target;
         readonly string _messageTemplate;
@@ -63,11 +63,11 @@ namespace SerilogTimings
         readonly long _start;
         long? _stop;
 
-        IDisposable _popContext;
+        readonly IDisposable _popContext;
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
-        private readonly TimeSpan? _warningThreshold;
+        readonly TimeSpan? _warningThreshold;
         Exception? _exception;
         
         internal Operation(ILogger target, string messageTemplate, object[] args,
@@ -87,7 +87,7 @@ namespace SerilogTimings
 
         static long GetTimestamp()
         {
-            return Stopwatch.GetTimestamp() / StopwatchToTimeSpanTicks;
+            return unchecked((long)(Stopwatch.GetTimestamp() / StopwatchToTimeSpanTicks));
         }
 
         /// <summary>
