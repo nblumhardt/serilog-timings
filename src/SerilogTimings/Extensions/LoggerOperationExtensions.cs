@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using SerilogTimings.Configuration;
 
@@ -31,6 +32,7 @@ namespace SerilogTimings.Extensions
         /// <param name="args">Arguments to the log message. These will be stored and captured only when the
         /// operation completes, so do not pass arguments that are mutated during the operation.</param>
         /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
         public static IDisposable TimeOperation(this ILogger logger, string messageTemplate, params object[] args)
         {
             return new Operation(logger, messageTemplate, args, CompletionBehaviour.Complete, LogEventLevel.Information, LogEventLevel.Warning);
@@ -45,6 +47,7 @@ namespace SerilogTimings.Extensions
         /// <param name="args">Arguments to the log message. These will be stored and captured only when the
         /// operation completes, so do not pass arguments that are mutated during the operation.</param>
         /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
         public static Operation BeginOperation(this ILogger logger, string messageTemplate, params object[] args)
         {
             return new Operation(logger, messageTemplate, args, CompletionBehaviour.Abandon, LogEventLevel.Information, LogEventLevel.Warning);

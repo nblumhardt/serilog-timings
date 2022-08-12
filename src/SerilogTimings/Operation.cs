@@ -98,6 +98,7 @@ namespace SerilogTimings
         /// <param name="args">Arguments to the log message. These will be stored and captured only when the
         /// operation completes, so do not pass arguments that are mutated during the operation.</param>
         /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
         public static Operation Begin(string messageTemplate, params object[] args)
         {
             return Log.Logger.BeginOperation(messageTemplate, args);
@@ -110,6 +111,7 @@ namespace SerilogTimings
         /// <param name="args">Arguments to the log message. These will be stored and captured only when the
         /// operation completes, so do not pass arguments that are mutated during the operation.</param>
         /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
         public static IDisposable Time(string messageTemplate, params object[] args)
         {
             return Log.Logger.TimeOperation(messageTemplate, args);
