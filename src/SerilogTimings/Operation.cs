@@ -19,6 +19,7 @@ using Serilog.Events;
 using SerilogTimings.Configuration;
 using SerilogTimings.Extensions;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace SerilogTimings
 {
@@ -69,11 +70,13 @@ namespace SerilogTimings
         readonly LogEventLevel _abandonmentLevel;
         readonly TimeSpan? _warningThreshold;
         Exception? _exception;
-        
+        private readonly Func<TimeSpan, string>? _timeTransform;
+
         internal Operation(ILogger target, string messageTemplate, object[] args,
             CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel,
-            TimeSpan? warningThreshold = null)
+            TimeSpan? warningThreshold = null, Func<TimeSpan, string>? timeTransform = null)
         {
+            _timeTransform = timeTransform;
             _target = target ?? throw new ArgumentNullException(nameof(target));
             _messageTemplate = messageTemplate ?? throw new ArgumentNullException(nameof(messageTemplate));
             _args = args ?? throw new ArgumentNullException(nameof(args));
@@ -105,6 +108,21 @@ namespace SerilogTimings
         }
 
         /// <summary>
+        /// Begin a new timed operation. The return value must be completed using <see cref="Complete()"/>,
+        /// or disposed to record abandonment.
+        /// </summary>
+        /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
+        /// <param name="args">Arguments to the log message. These will be stored and captured only when the
+        /// operation completes, so do not pass arguments that are mutated during the operation.</param>
+        /// <param name="timeTransform">Function to transform the time in another format</param>
+        /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
+        public static Operation BeginWithTransformation(string messageTemplate, Func<TimeSpan, string> timeTransform, params object[] args)
+        {
+            return Log.Logger.BeginOperation(messageTemplate, timeTransform, args);
+        }
+
+        /// <summary>
         /// Begin a new timed operation. The return value must be disposed to complete the operation.
         /// </summary>
         /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
@@ -118,18 +136,34 @@ namespace SerilogTimings
         }
 
         /// <summary>
+        /// Begin a new timed operation. The return value must be disposed to complete the operation.
+        /// </summary>
+        /// <param name="messageTemplate">A log message describing the operation, in message template format.</param>
+        /// <param name="args">Arguments to the log message. These will be stored and captured only when the
+        /// operation completes, so do not pass arguments that are mutated during the operation.</param>
+        /// <param name="timeTransform">Function to transform the time in another format</param>
+        /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
+        public static IDisposable TimeWithTransformation(string messageTemplate, Func<TimeSpan, string> timeTransform, params object[] args)
+        {
+            return Log.Logger.TimeOperation(messageTemplate, timeTransform, args);
+        }
+
+        /// <summary>
         /// Configure the logging levels used for completion and abandonment events.
         /// </summary>
         /// <param name="completion">The level of the event to write on operation completion.</param>
         /// <param name="abandonment">The level of the event to write on operation abandonment; if not
         /// specified, the <paramref name="completion"/> level will be used.</param>
+        /// <param name="timeTransform">Function to transform the time in another format</param>
         /// <returns>An object from which timings with the configured levels can be made.</returns>
         /// <remarks>If neither <paramref name="completion"/> nor <paramref name="abandonment"/> is enabled
         /// on the logger at the time of the call, a no-op result is returned.</remarks>
-        public static LevelledOperation At(LogEventLevel completion, LogEventLevel? abandonment = null)
+        public static LevelledOperation At(LogEventLevel completion, LogEventLevel? abandonment = null, Func<TimeSpan, string>? timeTransform = null)
         {
-            return Log.Logger.OperationAt(completion, abandonment);
+            return Log.Logger.OperationAt(completion, abandonment, timeTransform: timeTransform);
         }
+
 
         /// <summary>
         /// Returns the elapsed time of the operation. This will update during the operation, and be frozen once the
@@ -244,13 +278,13 @@ namespace SerilogTimings
             StopTiming();
             _completionBehaviour = CompletionBehaviour.Silent;
 
-            var elapsed = Elapsed.TotalMilliseconds;
+            var elapsed = _timeTransform != null ? _timeTransform(Elapsed) : $"{Elapsed.TotalMilliseconds:0.0} ms";
             
-            level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
+            level = Elapsed.TotalMilliseconds > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
                 ? LogEventLevel.Warning
                 : level; 
 
-            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
+            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}}}", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
             PopLogContext();
         }

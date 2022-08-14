@@ -30,13 +30,15 @@ namespace SerilogTimings.Configuration
         readonly LogEventLevel _completion;
         readonly LogEventLevel _abandonment;
         readonly TimeSpan? _warningThreshold;
+        private readonly Func<TimeSpan, string>? _timeTransform;
 
-        internal LevelledOperation(ILogger logger, LogEventLevel completion, LogEventLevel abandonment, TimeSpan? warningThreshold = null)
+        internal LevelledOperation(ILogger logger, LogEventLevel completion, LogEventLevel abandonment, TimeSpan? warningThreshold = null, Func<TimeSpan, string>? timeTransform = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _completion = completion;
             _abandonment = abandonment;
             _warningThreshold = warningThreshold;
+            _timeTransform = timeTransform;
         }
 
         LevelledOperation(Operation cachedResult)
@@ -63,7 +65,7 @@ namespace SerilogTimings.Configuration
         [MessageTemplateFormatMethod("messageTemplate")]
         public Operation Begin(string messageTemplate, params object[] args)
         {
-            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Abandon, _completion, _abandonment, _warningThreshold);
+            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Abandon, _completion, _abandonment, _warningThreshold, _timeTransform);
         }
 
         /// <summary>
@@ -76,7 +78,7 @@ namespace SerilogTimings.Configuration
         [MessageTemplateFormatMethod("messageTemplate")]
         public IDisposable Time(string messageTemplate, params object[] args)
         {
-            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Complete, _completion, _abandonment, _warningThreshold);
+            return _cachedResult ?? new Operation(_logger!, messageTemplate, args, CompletionBehaviour.Complete, _completion, _abandonment, _warningThreshold, _timeTransform);
         }
     }
 }

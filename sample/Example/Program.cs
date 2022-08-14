@@ -20,6 +20,19 @@ try
         op.Complete("Sum", sum);
     }
 
+    using (var op = Operation.BeginWithTransformation("Adding {Count} successive integers", ts =>
+           {
+               var info = string.Format("{0:00} h :{1:00} m :{2:00} s :{3:00} mls", ts.Hours, ts.Minutes, ts.Seconds,
+                   ts.Milliseconds / 10);
+               return info;
+           }, count))
+    {
+        var sum = Enumerable.Range(0, count).Sum();
+        Log.Information("This event is tagged with an operation id");
+
+        op.Complete("Sum", sum);
+    }
+
     Log.Information("Goodbye!");
     return 0;
 }
