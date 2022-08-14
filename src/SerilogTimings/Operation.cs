@@ -278,16 +278,19 @@ namespace SerilogTimings
             StopTiming();
             _completionBehaviour = CompletionBehaviour.Silent;
 
-            var elapsed = _timeTransform != null ? _timeTransform(Elapsed) : $"{Elapsed.TotalMilliseconds:0.0} ms";
-            
-            level = Elapsed.TotalMilliseconds > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
+            var elapsed = Elapsed.TotalMilliseconds;
+            object time = _timeTransform != null ? _timeTransform(Elapsed) : elapsed;
+            var format = _timeTransform != null ? "" : " ms";
+            level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
                 ? LogEventLevel.Warning
                 : level; 
 
-            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}}}", _args.Concat(new object[] { outcome, elapsed }).ToArray());
-
+            target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}}{format}", _args.Concat(new object[] { outcome, time }).ToArray());
+           
             PopLogContext();
         }
+
+
 
         /// <summary>
         /// Enriches resulting log event via the provided enricher.
