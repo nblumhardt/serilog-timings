@@ -69,7 +69,7 @@ namespace SerilogTimings
         readonly LogEventLevel _abandonmentLevel;
         readonly TimeSpan? _warningThreshold;
         Exception? _exception;
-        
+
         internal Operation(ILogger target, string messageTemplate, object[] args,
             CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel,
             TimeSpan? warningThreshold = null)
@@ -149,7 +149,7 @@ namespace SerilogTimings
                     // (HAL) on machines with variable-speed CPUs (e.g. Intel SpeedStep).
                     return TimeSpan.Zero;
                 }
-                
+
                 return TimeSpan.FromTicks(elapsedTicks);
             }
         }
@@ -168,14 +168,14 @@ namespace SerilogTimings
         /// <summary>
         /// Complete the timed operation with the given Log Event level. This will write the event and elapsed time to the log.
         /// </summary>
-        /// <param name="logEventLevel">The log event level with which the complete operation will be logged</param>
+        /// <param name="level">The log event level with which the complete operation will be logged</param>
 
-        public void Complete(LogEventLevel logEventLevel)
+        public void Complete(LogEventLevel level)
         {
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
 
-            Write(_target, logEventLevel, OutcomeCompleted);
+            Write(_target, level, OutcomeCompleted);
         }
 
 
@@ -198,18 +198,18 @@ namespace SerilogTimings
         /// <summary>
         /// Complete the timed operation with an included result value and log event level.
         /// </summary>
+        /// <param name="level">The log event level with which the complete operation will be logged</param>
         /// <param name="resultPropertyName">The name for the property to attach to the event.</param>
         /// <param name="result">The result value.</param>
-        /// <param name="logEventLevel">The log event level with which the complete operation will be logged</param>
         /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
-        public void Complete(string resultPropertyName, object result, LogEventLevel logEventLevel, bool destructureObjects = false)
+        public void Complete(string resultPropertyName, object result, LogEventLevel level, bool destructureObjects = false)
         {
             if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
 
             if (_completionBehaviour == CompletionBehaviour.Silent)
                 return;
 
-            Write(_target.ForContext(resultPropertyName, result, destructureObjects), logEventLevel, OutcomeCompleted);
+            Write(_target.ForContext(resultPropertyName, result, destructureObjects), level, OutcomeCompleted);
         }
 
         /// <summary>
@@ -276,10 +276,10 @@ namespace SerilogTimings
             _completionBehaviour = CompletionBehaviour.Silent;
 
             var elapsed = Elapsed.TotalMilliseconds;
-            
+
             level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
                 ? LogEventLevel.Warning
-                : level; 
+                : level;
 
             target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
