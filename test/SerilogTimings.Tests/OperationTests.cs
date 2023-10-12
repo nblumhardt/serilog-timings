@@ -115,6 +115,16 @@ namespace SerilogTimings.Tests
         }
 
         [Fact]
+        public void DoesNotCompleteWithGivenLevelIfAbandonedBeforehand()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon();
+            op.Complete(LogEventLevel.Error);
+            Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
+        }
+
+        [Fact]
         public void OnceCanceledDisposeDoesNotRecordCompletionOfOperations()
         {
             var logger = new CollectingLogger();
