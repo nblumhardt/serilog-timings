@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 using SerilogTimings.Extensions;
 using SerilogTimings.Tests.Support;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SerilogTimings.Tests
@@ -92,6 +92,36 @@ namespace SerilogTimings.Tests
             op.Complete("Value", 42);
             Assert.Single(logger.Events);
             Assert.True(logger.Events.Single().Properties.ContainsKey("Value"));
+        }
+
+        [Fact]
+        public void CompleteRecordsResultsOfOperationsWithGivenLogLevel()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Complete("Value", 42, LogEventLevel.Warning);
+            Assert.Single(logger.Events);
+            Assert.True(logger.Events.Single().Properties.ContainsKey("Value"));
+            Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
+        }
+
+        [Fact]
+        public void CompletesWithGivenLogLevel()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Complete(LogEventLevel.Error);
+            Assert.Equal(LogEventLevel.Error, logger.Events.Single().Level);
+        }
+
+        [Fact]
+        public void DoesNotCompleteWithGivenLevelIfAbandonedBeforehand()
+        {
+            var logger = new CollectingLogger();
+            var op = logger.Logger.BeginOperation("Test");
+            op.Abandon();
+            op.Complete(LogEventLevel.Error);
+            Assert.Equal(LogEventLevel.Warning, logger.Events.Single().Level);
         }
 
         [Fact]
@@ -271,7 +301,7 @@ namespace SerilogTimings.Tests
             Assert.Equal(third, fourth);
             Assert.Equal(fourth, fifth);
         }
-        
+
         [Fact]
         public async Task LongOperationsAreLoggedAsWarnings()
         {

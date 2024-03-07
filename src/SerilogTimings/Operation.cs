@@ -69,7 +69,7 @@ namespace SerilogTimings
         readonly LogEventLevel _abandonmentLevel;
         readonly TimeSpan? _warningThreshold;
         Exception? _exception;
-        
+
         internal Operation(ILogger target, string messageTemplate, object[] args,
             CompletionBehaviour completionBehaviour, LogEventLevel completionLevel, LogEventLevel abandonmentLevel,
             TimeSpan? warningThreshold = null)
@@ -98,6 +98,7 @@ namespace SerilogTimings
         /// <param name="args">Arguments to the log message. These will be stored and captured only when the
         /// operation completes, so do not pass arguments that are mutated during the operation.</param>
         /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
         public static Operation Begin(string messageTemplate, params object[] args)
         {
             return Log.Logger.BeginOperation(messageTemplate, args);
@@ -110,6 +111,7 @@ namespace SerilogTimings
         /// <param name="args">Arguments to the log message. These will be stored and captured only when the
         /// operation completes, so do not pass arguments that are mutated during the operation.</param>
         /// <returns>An <see cref="Operation"/> object.</returns>
+        [MessageTemplateFormatMethod("messageTemplate")]
         public static IDisposable Time(string messageTemplate, params object[] args)
         {
             return Log.Logger.TimeOperation(messageTemplate, args);
@@ -147,7 +149,7 @@ namespace SerilogTimings
                     // (HAL) on machines with variable-speed CPUs (e.g. Intel SpeedStep).
                     return TimeSpan.Zero;
                 }
-                
+
                 return TimeSpan.FromTicks(elapsedTicks);
             }
         }
@@ -164,6 +166,20 @@ namespace SerilogTimings
         }
 
         /// <summary>
+        /// Complete the timed operation with the given Log Event level. This will write the event and elapsed time to the log.
+        /// </summary>
+        /// <param name="level">The log event level with which the complete operation will be logged</param>
+
+        public void Complete(LogEventLevel level)
+        {
+            if (_completionBehaviour == CompletionBehaviour.Silent)
+                return;
+
+            Write(_target, level, OutcomeCompleted);
+        }
+
+
+        /// <summary>
         /// Complete the timed operation with an included result value.
         /// </summary>
         /// <param name="resultPropertyName">The name for the property to attach to the event.</param>
@@ -177,6 +193,23 @@ namespace SerilogTimings
                 return;
 
             Write(_target.ForContext(resultPropertyName, result, destructureObjects), _completionLevel, OutcomeCompleted);
+        }
+
+        /// <summary>
+        /// Complete the timed operation with an included result value and log event level.
+        /// </summary>
+        /// <param name="level">The log event level with which the complete operation will be logged</param>
+        /// <param name="resultPropertyName">The name for the property to attach to the event.</param>
+        /// <param name="result">The result value.</param>
+        /// <param name="destructureObjects">If true, the property value will be destructured (serialized).</param>
+        public void Complete(string resultPropertyName, object result, LogEventLevel level, bool destructureObjects = false)
+        {
+            if (resultPropertyName == null) throw new ArgumentNullException(nameof(resultPropertyName));
+
+            if (_completionBehaviour == CompletionBehaviour.Silent)
+                return;
+
+            Write(_target.ForContext(resultPropertyName, result, destructureObjects), level, OutcomeCompleted);
         }
 
         /// <summary>
@@ -243,10 +276,10 @@ namespace SerilogTimings
             _completionBehaviour = CompletionBehaviour.Silent;
 
             var elapsed = Elapsed.TotalMilliseconds;
-            
+
             level = elapsed > _warningThreshold?.TotalMilliseconds && level < LogEventLevel.Warning
                 ? LogEventLevel.Warning
-                : level; 
+                : level;
 
             target.Write(level, _exception, $"{_messageTemplate} {{{nameof(Properties.Outcome)}}} in {{{nameof(Properties.Elapsed)}:0.0}} ms", _args.Concat(new object[] { outcome, elapsed }).ToArray());
 
