@@ -13,6 +13,12 @@ Serilog Timings is built with some specific requirements in mind:
 This keeps noise in the log to a minimum, and makes it easy to extract and manipulate timing 
 information on a per-operation basis.
 
+> [!IMPORTANT]
+> SerilogTimings is maintained, but "done". Its simple, lightweight, portable, opinionated API is considered a feature, and it's unlikely any further changes will
+> be made. For integration with .NET's tracing system, including out-of-the-box support for ASP.NET Core, `HttpClient`, and `SqlClient` tracing, check out
+> [SerilogTracing](https://github.com/serilog-tracing/serilog-tracing), the logical successor to SerilogTimings, influenced strongly by the SerilogTimings API. Read
+> [this migration guide](https://nblumhardt.com/2024/03/from-serilog-timings-to-tracing/) if you're interested in porting an existing codebase to the new library.
+
 ### Installation
 
 The library is published as _SerilogTimings_ on NuGet.
