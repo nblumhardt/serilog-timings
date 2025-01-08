@@ -115,6 +115,16 @@ using (logger.TimeOperation("Submitting payment for {OrderId}", order.Id))
 }
 ```
 
+
+If you need to the the log level too, the `OperationAt` extension method is useful:
+```csharp
+using (requestLogger.OperationAt(LogEventLevel.Debug).Time("Fetching")) {
+{
+    // Timed block of code goes here
+}
+
+```
+
 These otherwise behave identically to `Operation.Time()` and `Operation.Begin()`.
 
 ### `LogContext` support
