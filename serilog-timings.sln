@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E12C42C0-7235-47D6-8D63-2EF82A2365B0}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,11 +12,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SerilogTimings", "src\SerilogTimings\SerilogTimings.xproj", "{3B709371-7B4D-41D5-9F0A-34E3CA14B6CD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerilogTimings", "src\SerilogTimings\SerilogTimings.csproj", "{7F187B76-CFE9-4A22-94B6-8B9CC8FB5554}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SerilogTimings.Tests", "test\SerilogTimings.Tests\SerilogTimings.Tests.xproj", "{E813903B-9791-43FA-AB21-7757385C7EB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "sample\Example\Example.csproj", "{5392D764-7F5F-460C-B060-DAA23498CBCF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Example", "sample\Example\Example.xproj", "{3482E6CB-3EE6-4BCF-8DBB-2343ECCFD1E1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerilogTimings.Tests", "test\SerilogTimings.Tests\SerilogTimings.Tests.csproj", "{7860FA49-8BF2-4C16-9A49-121D6A8BD04A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,18 +24,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3B709371-7B4D-41D5-9F0A-34E3CA14B6CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B709371-7B4D-41D5-9F0A-34E3CA14B6CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B709371-7B4D-41D5-9F0A-34E3CA14B6CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B709371-7B4D-41D5-9F0A-34E3CA14B6CD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E813903B-9791-43FA-AB21-7757385C7EB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E813903B-9791-43FA-AB21-7757385C7EB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E813903B-9791-43FA-AB21-7757385C7EB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E813903B-9791-43FA-AB21-7757385C7EB1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3482E6CB-3EE6-4BCF-8DBB-2343ECCFD1E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3482E6CB-3EE6-4BCF-8DBB-2343ECCFD1E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3482E6CB-3EE6-4BCF-8DBB-2343ECCFD1E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3482E6CB-3EE6-4BCF-8DBB-2343ECCFD1E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F187B76-CFE9-4A22-94B6-8B9CC8FB5554}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F187B76-CFE9-4A22-94B6-8B9CC8FB5554}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F187B76-CFE9-4A22-94B6-8B9CC8FB5554}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F187B76-CFE9-4A22-94B6-8B9CC8FB5554}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5392D764-7F5F-460C-B060-DAA23498CBCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5392D764-7F5F-460C-B060-DAA23498CBCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5392D764-7F5F-460C-B060-DAA23498CBCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5392D764-7F5F-460C-B060-DAA23498CBCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7860FA49-8BF2-4C16-9A49-121D6A8BD04A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7860FA49-8BF2-4C16-9A49-121D6A8BD04A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7860FA49-8BF2-4C16-9A49-121D6A8BD04A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7860FA49-8BF2-4C16-9A49-121D6A8BD04A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

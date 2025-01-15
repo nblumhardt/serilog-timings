@@ -10,7 +10,7 @@ namespace Example
         {
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
-                .WriteTo.LiterateConsole()
+                .WriteTo.Console()
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
 
