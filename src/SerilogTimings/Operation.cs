@@ -63,7 +63,7 @@ namespace SerilogTimings
         readonly long _start;
         long? _stop;
 
-        readonly IDisposable _popContext;
+        readonly IDisposable? _popContext;
         CompletionBehaviour _completionBehaviour;
         readonly LogEventLevel _completionLevel;
         readonly LogEventLevel _abandonmentLevel;
@@ -81,7 +81,12 @@ namespace SerilogTimings
             _completionLevel = completionLevel;
             _abandonmentLevel = abandonmentLevel;
             _warningThreshold = warningThreshold;
-            _popContext = LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
+            // An operation that starts out silent is the no-op shared by every caller of LevelledOperation.None.  It
+            // must not touch the LogContext: the handle that pops a push restores the context as it was when pushed,
+            // so disposing a shared one would reset each caller's context to that of whichever caller created it.
+            _popContext = completionBehaviour == CompletionBehaviour.Silent
+                ? null
+                : LogContext.PushProperty(nameof(Properties.OperationId), Guid.NewGuid());
             _start = GetTimestamp();
         }
 
@@ -267,7 +272,7 @@ namespace SerilogTimings
 
         void PopLogContext()
         {
-            _popContext.Dispose();
+            _popContext?.Dispose();
         }
 
         void Write(ILogger target, LogEventLevel level, string outcome)
