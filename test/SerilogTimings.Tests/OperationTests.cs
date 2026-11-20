@@ -1,4 +1,5 @@
 ﻿using Serilog;
+using Serilog.Context;
 using Serilog.Events;
 using SerilogTimings.Extensions;
 using SerilogTimings.Tests.Support;
@@ -216,6 +217,39 @@ namespace SerilogTimings.Tests
             var op = logger.OperationAt(LogEventLevel.Verbose).Time("Test");
             var op2 = logger.OperationAt(LogEventLevel.Verbose).Time("Test");
             Assert.Same(op, op2);
+        }
+
+        [Fact]
+        public async Task DisposingTheCachedResultLeavesTheLogContextAsItIs()
+        {
+            var innerLogger = new CollectingLogger();
+            var logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Logger(innerLogger.Logger)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+
+            // The cached result is shared by the whole process - make sure it has been used under another context
+            await Task.Run(() =>
+            {
+                using (LogContext.PushProperty("Flow", "first"))
+                {
+                    logger.OperationAt(LogEventLevel.Verbose).Begin("Test").Dispose();
+                }
+            });
+
+            using (LogContext.PushProperty("Flow", "second"))
+            {
+                logger.OperationAt(LogEventLevel.Verbose).Begin("Test").Dispose();
+                logger.OperationAt(LogEventLevel.Verbose).Time("Test").Dispose();
+                logger.OperationAt(LogEventLevel.Verbose).Begin("Test").Cancel();
+                logger.Information("After the operations");
+            }
+
+            var after = Assert.Single(innerLogger.Events);
+            Assert.True(after.Properties.TryGetValue("Flow", out var flow));
+            Assert.Equal("second", ((ScalarValue)flow).Value);
+            Assert.False(after.Properties.ContainsKey(nameof(Operation.Properties.OperationId)));
         }
 
         [Fact]
